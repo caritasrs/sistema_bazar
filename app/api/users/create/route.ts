@@ -13,14 +13,18 @@ export async function POST(request: NextRequest) {
 
     const currentUser = JSON.parse(authToken.value)
 
-    if (currentUser.role !== "super_admin") {
-      return NextResponse.json({ error: "Apenas super admins podem criar usuários" }, { status: 403 })
+    if (currentUser.role !== "super_admin" && currentUser.role !== "admin") {
+      return NextResponse.json({ error: "Permissão negada" }, { status: 403 })
     }
 
     const { email, name, cpf, password, role, phone, address } = await request.json()
 
-    if (role !== "operator") {
-      return NextResponse.json({ error: "Pode-se criar apenas operadores" }, { status: 400 })
+    if (currentUser.role === "super_admin" && role !== "admin" && role !== "operator") {
+      return NextResponse.json({ error: "Super admin pode criar apenas admins e operadores" }, { status: 400 })
+    }
+
+    if (currentUser.role === "admin" && role !== "operator") {
+      return NextResponse.json({ error: "Admin pode criar apenas operadores" }, { status: 400 })
     }
 
     const result = await createUser(email, name, cpf, password, role, phone, address)

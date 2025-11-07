@@ -27,18 +27,13 @@ export function Sidebar({ user }: SidebarProps) {
           Dashboard
         </Link>
 
-        {user?.role === "super_admin" && (
-          <>
-            <Link href="/dashboard/usuarios" className="block px-4 py-2 rounded hover:bg-red-700 transition-colors">
-              Gestão de Usuários
-            </Link>
-            <Link href="/dashboard/clientes" className="block px-4 py-2 rounded hover:bg-red-700 transition-colors">
-              Gestão de Clientes
-            </Link>
-          </>
+        {(user?.role === "super_admin" || user?.role === "admin") && (
+          <Link href="/dashboard/usuarios" className="block px-4 py-2 rounded hover:bg-red-700 transition-colors">
+            Gestão de Usuários
+          </Link>
         )}
 
-        {user?.role === "operator" && (
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
           <Link href="/dashboard/clientes" className="block px-4 py-2 rounded hover:bg-red-700 transition-colors">
             Gestão de Clientes
           </Link>

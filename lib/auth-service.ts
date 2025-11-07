@@ -12,7 +12,7 @@ export interface User {
   email: string
   name: string
   cpf: string
-  role: "super_admin" | "operator" | "client"
+  role: "super_admin" | "admin" | "operator" | "client"
   status: "active" | "inactive" | "suspended"
   phone?: string
   address?: string
@@ -85,7 +85,7 @@ export async function createUser(
   name: string,
   cpf: string,
   password: string,
-  role: "operator" | "client",
+  role: "admin" | "operator" | "client",
   phone?: string,
   address?: string,
 ): Promise<{ success: boolean; user?: User; error?: string }> {

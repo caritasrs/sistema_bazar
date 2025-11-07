@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface UserFormProps {
+  roleToCreate: "admin" | "operator"
   onSuccess: () => void
   onCancel: () => void
 }
 
-export function UserForm({ onSuccess, onCancel }: UserFormProps) {
+export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState({
     email: "",
     name: "",
@@ -38,18 +39,24 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
       const response = await fetch("/api/users/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, role: roleToCreate }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setMessage({ type: "success", text: "Operador criado com sucesso!" })
+        setMessage({
+          type: "success",
+          text: `${roleToCreate === "admin" ? "Administrador" : "Operador"} criado com sucesso!`,
+        })
         setTimeout(() => {
           onSuccess()
         }, 1500)
       } else {
-        setMessage({ type: "error", text: data.error || "Erro ao criar operador" })
+        setMessage({
+          type: "error",
+          text: data.error || `Erro ao criar ${roleToCreate === "admin" ? "administrador" : "operador"}`,
+        })
       }
     } catch (error) {
       setMessage({ type: "error", text: "Erro ao conectar ao servidor" })
@@ -135,7 +142,7 @@ export function UserForm({ onSuccess, onCancel }: UserFormProps) {
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700">
-          {loading ? "Criando..." : "Criar Operador"}
+          {loading ? "Criando..." : `Criar ${roleToCreate === "admin" ? "Administrador" : "Operador"}`}
         </Button>
         <Button type="button" onClick={onCancel} variant="outline" className="flex-1 bg-transparent">
           Cancelar
