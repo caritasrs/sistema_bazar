@@ -56,8 +56,6 @@ export async function authenticateUser(
   try {
     const supabase = createClient()
 
-    console.log("[v0] Looking up user with email:", credentials.email)
-
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -65,17 +63,11 @@ export async function authenticateUser(
       .eq("status", "active")
       .maybeSingle()
 
-    console.log("[v0] User lookup result:", { found: !!data, error: error?.message })
-
     if (error || !data) {
       return { success: false, error: "Usuário não encontrado" }
     }
 
-    console.log("[v0] Comparing password, hash exists:", !!data.password_hash)
-
     const passwordMatch = await verifyPassword(credentials.password, data.password_hash)
-
-    console.log("[v0] Password match result:", passwordMatch)
 
     if (!passwordMatch) {
       return { success: false, error: "Senha incorreta" }
@@ -84,7 +76,6 @@ export async function authenticateUser(
     const { password_hash, ...user } = data
     return { success: true, user }
   } catch (error) {
-    console.log("[v0] Authentication error:", error)
     return { success: false, error: "Erro ao autenticar usuário" }
   }
 }

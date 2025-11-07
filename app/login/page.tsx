@@ -101,18 +101,6 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-
-        <div className="text-center text-sm text-gray-600 space-y-2">
-          <p>Credenciais de teste (Super Admin):</p>
-          <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs">
-            <p>
-              <strong>Email:</strong> sistema@caritasrs.org.br
-            </p>
-            <p>
-              <strong>Senha:</strong> Caritas@2025Admin!
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   )
