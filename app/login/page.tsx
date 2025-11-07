@@ -55,7 +55,6 @@ export default function LoginPage() {
             <div className="relative h-16 w-16 rounded-xl bg-white p-3 shadow-lg">
               <CaritasLogo className="h-full w-full" />
             </div>
-            {/* */}
           </div>
           <h1 className="text-3xl font-bold text-white mb-1 drop-shadow-lg">CÁRITAS BRASILEIRA</h1>
           <p className="text-lg text-red-100 font-medium">Rio Grande do Sul</p>
@@ -76,8 +75,8 @@ export default function LoginPage() {
 
         <Card className="bg-red-900/25 backdrop-blur-md border-red-300/20 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-white">Login</CardTitle>
-            <CardDescription className="text-red-50">Acesse o sistema administrativo</CardDescription>
+            <CardTitle className="text-white">Acesso ao Sistema</CardTitle>
+            <CardDescription className="text-red-50">Login para administradores, operadores e clientes</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -123,6 +122,13 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
+
+        <div className="bg-red-900/20 backdrop-blur-md rounded-xl p-4 border border-red-300/20">
+          <p className="text-white/90 text-sm text-center leading-relaxed">
+            O sistema reconhece automaticamente seu nível de acesso (Super Admin, Administrador, Operador ou Cliente) e
+            exibe as funcionalidades correspondentes.
+          </p>
+        </div>
       </div>
     </div>
   )

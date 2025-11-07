@@ -10,7 +10,7 @@ export default function UsuariosPage() {
   const [user, setUser] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [userTypeToCreate, setUserTypeToCreate] = useState<"admin" | "operator">("operator")
+  const [userTypeToCreate, setUserTypeToCreate] = useState<"admin" | "operator" | "client">("operator")
   const router = useRouter()
 
   useEffect(() => {
@@ -43,18 +43,27 @@ export default function UsuariosPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Usuários</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-white">Gestão de Usuários</h1>
+        <p className="text-white/90 mt-2">
           {user?.role === "super_admin"
-            ? "Crie e gerencie administradores e operadores do sistema"
-            : "Crie e gerencie operadores do sistema"}
+            ? "Crie e gerencie administradores, operadores e clientes do sistema"
+            : user?.role === "admin"
+              ? "Crie e gerencie operadores e clientes do sistema"
+              : "Crie e gerencie clientes do sistema"}
         </p>
       </div>
 
       {showForm && (
-        <Card className="border-red-200 bg-red-50/50">
+        <Card className="border-red-200/30 bg-red-900/10 backdrop-blur-md">
           <CardHeader>
-            <CardTitle>Criar Novo {userTypeToCreate === "admin" ? "Administrador" : "Operador"}</CardTitle>
+            <CardTitle className="text-white">
+              Criar Novo{" "}
+              {userTypeToCreate === "admin"
+                ? "Administrador"
+                : userTypeToCreate === "operator"
+                  ? "Operador"
+                  : "Cliente"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <UserForm
@@ -88,18 +97,50 @@ export default function UsuariosPage() {
               >
                 + Novo Operador
               </button>
+              <button
+                onClick={() => {
+                  setUserTypeToCreate("client")
+                  setShowForm(true)
+                }}
+                className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 transition-colors"
+              >
+                + Novo Cliente
+              </button>
             </>
           )}
 
           {user?.role === "admin" && (
+            <>
+              <button
+                onClick={() => {
+                  setUserTypeToCreate("operator")
+                  setShowForm(true)
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                + Novo Operador
+              </button>
+              <button
+                onClick={() => {
+                  setUserTypeToCreate("client")
+                  setShowForm(true)
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                + Novo Cliente
+              </button>
+            </>
+          )}
+
+          {user?.role === "operator" && (
             <button
               onClick={() => {
-                setUserTypeToCreate("operator")
+                setUserTypeToCreate("client")
                 setShowForm(true)
               }}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
-              + Novo Operador
+              + Novo Cliente
             </button>
           )}
         </div>

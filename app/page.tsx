@@ -31,7 +31,9 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/login">
-              <Button className="bg-white/20 hover:bg-white/30 text-white shadow-md backdrop-blur-sm">Admin</Button>
+              <Button className="bg-white/20 hover:bg-white/30 text-white shadow-md backdrop-blur-sm">
+                Acesso ao Sistema
+              </Button>
             </Link>
           </nav>
         </div>
@@ -225,7 +227,7 @@ export default function Home() {
                 </li>
                 <li>
                   <Link href="/login" className="text-white/80 hover:text-white transition">
-                    Admin
+                    Acesso ao Sistema
                   </Link>
                 </li>
               </ul>

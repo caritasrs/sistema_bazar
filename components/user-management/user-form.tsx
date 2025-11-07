@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface UserFormProps {
-  roleToCreate: "admin" | "operator"
+  roleToCreate: "admin" | "operator" | "client"
   onSuccess: () => void
   onCancel: () => void
 }
@@ -22,12 +22,46 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
     password: "",
     phone: "",
     address: "",
+    cep: "",
+    street: "",
+    neighborhood: "",
+    city: "",
+    state: "",
   })
   const [loading, setLoading] = useState(false)
+  const [loadingCep, setLoadingCep] = useState(false)
   const [message, setMessage] = useState<{ type: string; text: string } | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleCepBlur = async () => {
+    const cep = formData.cep.replace(/\D/g, "")
+    if (cep.length !== 8) return
+
+    setLoadingCep(true)
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data = await response.json()
+
+      if (!data.erro) {
+        setFormData({
+          ...formData,
+          street: data.logradouro || "",
+          neighborhood: data.bairro || "",
+          city: data.localidade || "",
+          state: data.uf || "",
+          address: `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`,
+        })
+      } else {
+        setMessage({ type: "error", text: "CEP não encontrado" })
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: "Erro ao buscar CEP" })
+    } finally {
+      setLoadingCep(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,17 +79,21 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
       const data = await response.json()
 
       if (response.ok) {
+        const roleLabel =
+          roleToCreate === "admin" ? "Administrador" : roleToCreate === "operator" ? "Operador" : "Cliente"
         setMessage({
           type: "success",
-          text: `${roleToCreate === "admin" ? "Administrador" : "Operador"} criado com sucesso!`,
+          text: `${roleLabel} criado com sucesso!`,
         })
         setTimeout(() => {
           onSuccess()
         }, 1500)
       } else {
+        const roleLabel =
+          roleToCreate === "admin" ? "administrador" : roleToCreate === "operator" ? "operador" : "cliente"
         setMessage({
           type: "error",
-          text: data.error || `Erro ao criar ${roleToCreate === "admin" ? "administrador" : "operador"}`,
+          text: data.error || `Erro ao criar ${roleLabel}`,
         })
       }
     } catch (error) {
@@ -116,15 +154,58 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="address">Endereço</Label>
-        <Input
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          placeholder="Rua das Flores, 123"
-        />
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="cep">CEP</Label>
+          <Input
+            id="cep"
+            name="cep"
+            value={formData.cep}
+            onChange={handleChange}
+            onBlur={handleCepBlur}
+            placeholder="00000-000"
+            maxLength={9}
+          />
+          {loadingCep && <p className="text-xs text-gray-500 mt-1">Buscando endereço...</p>}
+        </div>
+        <div className="col-span-2">
+          <Label htmlFor="street">Rua</Label>
+          <Input
+            id="street"
+            name="street"
+            value={formData.street}
+            onChange={handleChange}
+            placeholder="Rua das Flores"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="neighborhood">Bairro</Label>
+          <Input
+            id="neighborhood"
+            name="neighborhood"
+            value={formData.neighborhood}
+            onChange={handleChange}
+            placeholder="Centro"
+          />
+        </div>
+        <div>
+          <Label htmlFor="city">Cidade</Label>
+          <Input id="city" name="city" value={formData.city} onChange={handleChange} placeholder="Porto Alegre" />
+        </div>
+        <div>
+          <Label htmlFor="state">Estado</Label>
+          <Input
+            id="state"
+            name="state"
+            value={formData.state}
+            onChange={handleChange}
+            placeholder="RS"
+            maxLength={2}
+          />
+        </div>
       </div>
 
       <div>
@@ -142,7 +223,9 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700">
-          {loading ? "Criando..." : `Criar ${roleToCreate === "admin" ? "Administrador" : "Operador"}`}
+          {loading
+            ? "Criando..."
+            : `Criar ${roleToCreate === "admin" ? "Administrador" : roleToCreate === "operator" ? "Operador" : "Cliente"}`}
         </Button>
         <Button type="button" onClick={onCancel} variant="outline" className="flex-1 bg-transparent">
           Cancelar
