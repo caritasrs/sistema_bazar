@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const currentUser = JSON.parse(authToken.value)
 
-    if (currentUser.role !== "super_admin" && currentUser.role !== "operator") {
+    if (currentUser.role !== "super_admin" && currentUser.role !== "admin" && currentUser.role !== "operator") {
       return NextResponse.json({ error: "Permissão negada" }, { status: 403 })
     }
 
@@ -26,11 +26,14 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
 
     if (error) {
+      console.error("[v0] Error fetching clients:", error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    console.log("[v0] Clients fetched successfully:", data?.length || 0)
     return NextResponse.json({ success: true, clients: data || [] })
   } catch (error) {
+    console.error("[v0] Unexpected error in clients list:", error)
     return NextResponse.json({ error: "Erro ao listar clientes" }, { status: 500 })
   }
 }

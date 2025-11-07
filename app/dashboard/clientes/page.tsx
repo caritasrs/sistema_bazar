@@ -19,7 +19,7 @@ export default function ClientesPage() {
         const data = await response.json()
 
         if (data.authenticated) {
-          if (data.user.role !== "super_admin" && data.user.role !== "operator") {
+          if (data.user.role !== "super_admin" && data.user.role !== "admin" && data.user.role !== "operator") {
             router.push("/dashboard")
           }
           setUser(data.user)

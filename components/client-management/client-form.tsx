@@ -34,14 +34,20 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
     setLoading(true)
     setMessage(null)
 
+    console.log("[v0] Creating client with data:", { ...formData, password: "***" })
+
     try {
-      const response = await fetch("/api/clients/create", {
+      const response = await fetch("/api/users/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          role: "client", // Always create as client
+        }),
       })
 
       const data = await response.json()
+      console.log("[v0] Client creation response:", { success: response.ok, data })
 
       if (response.ok) {
         setMessage({ type: "success", text: "Cliente criado com sucesso!" })
@@ -52,6 +58,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
         setMessage({ type: "error", text: data.error || "Erro ao criar cliente" })
       }
     } catch (error) {
+      console.error("[v0] Client creation error:", error)
       setMessage({ type: "error", text: "Erro ao conectar ao servidor" })
     } finally {
       setLoading(false)
@@ -70,7 +77,9 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name">Nome Completo</Label>
+          <Label htmlFor="name" className="text-white">
+            Nome Completo
+          </Label>
           <Input
             id="name"
             name="name"
@@ -81,7 +90,9 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="email">E-mail</Label>
+          <Label htmlFor="email" className="text-white">
+            E-mail
+          </Label>
           <Input
             id="email"
             name="email"
@@ -93,7 +104,9 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="cpf">CPF</Label>
+          <Label htmlFor="cpf" className="text-white">
+            CPF
+          </Label>
           <Input
             id="cpf"
             name="cpf"
@@ -104,13 +117,17 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="phone">Telefone</Label>
+          <Label htmlFor="phone" className="text-white">
+            Telefone
+          </Label>
           <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="(51) 98765-4321" />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="address">Endereço</Label>
+        <Label htmlFor="address" className="text-white">
+          Endereço
+        </Label>
         <Input
           id="address"
           name="address"
@@ -121,15 +138,18 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="password">Senha (12+ caracteres, maiúscula, minúscula, número e caractere especial)</Label>
+        <Label htmlFor="password" className="text-white">
+          Senha (mínimo 8 caracteres)
+        </Label>
         <Input
           id="password"
           name="password"
           type="password"
           value={formData.password}
           onChange={handleChange}
-          placeholder="Cliente@2025Senha!"
+          placeholder="Mínimo 8 caracteres"
           required
+          minLength={8}
         />
       </div>
 
@@ -137,7 +157,12 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
         <Button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700">
           {loading ? "Criando..." : "Criar Cliente"}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="flex-1 bg-transparent">
+        <Button
+          type="button"
+          onClick={onCancel}
+          variant="outline"
+          className="flex-1 bg-transparent text-white border-white/30 hover:bg-white/10"
+        >
           Cancelar
         </Button>
       </div>
