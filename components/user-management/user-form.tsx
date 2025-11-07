@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Search } from "lucide-react"
 
 interface UserFormProps {
   roleToCreate: "admin" | "operator" | "client"
@@ -24,6 +25,8 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
     address: "",
     cep: "",
     street: "",
+    number: "",
+    complement: "",
     neighborhood: "",
     city: "",
     state: "",
@@ -36,11 +39,15 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleCepBlur = async () => {
+  const handleSearchCep = async () => {
     const cep = formData.cep.replace(/\D/g, "")
-    if (cep.length !== 8) return
+    if (cep.length !== 8) {
+      setMessage({ type: "error", text: "CEP deve ter 8 dígitos" })
+      return
+    }
 
     setLoadingCep(true)
+    setMessage(null)
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data = await response.json()
@@ -52,8 +59,8 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
           neighborhood: data.bairro || "",
           city: data.localidade || "",
           state: data.uf || "",
-          address: `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`,
         })
+        setMessage({ type: "success", text: "CEP encontrado!" })
       } else {
         setMessage({ type: "error", text: "CEP não encontrado" })
       }
@@ -63,17 +70,28 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
       setLoadingCep(false)
     }
   }
+  // </CHANGE>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
 
+    const fullAddress = `${formData.street}${formData.number ? `, ${formData.number}` : ""}${formData.complement ? ` - ${formData.complement}` : ""}, ${formData.neighborhood}, ${formData.city} - ${formData.state}, CEP: ${formData.cep}`
+
     try {
       const response = await fetch("/api/users/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, role: roleToCreate }),
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.name,
+          cpf: formData.cpf,
+          password: formData.password,
+          phone: formData.phone,
+          address: fullAddress,
+          role: roleToCreate,
+        }),
       })
 
       const data = await response.json()
@@ -172,80 +190,126 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="cep" className="text-white">
-            CEP
-          </Label>
-          <Input
-            id="cep"
-            name="cep"
-            value={formData.cep}
-            onChange={handleChange}
-            onBlur={handleCepBlur}
-            placeholder="00000-000"
-            maxLength={9}
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
-          {loadingCep && <p className="text-xs text-white/70 mt-1">Buscando endereço...</p>}
-        </div>
-        <div className="col-span-2">
-          <Label htmlFor="street" className="text-white">
-            Rua
-          </Label>
-          <Input
-            id="street"
-            name="street"
-            value={formData.street}
-            onChange={handleChange}
-            placeholder="Rua das Flores"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
-        </div>
-      </div>
+      <div className="space-y-4 p-4 bg-white/5 rounded-lg">
+        <h4 className="text-white font-medium">Endereço</h4>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="neighborhood" className="text-white">
-            Bairro
-          </Label>
-          <Input
-            id="neighborhood"
-            name="neighborhood"
-            value={formData.neighborhood}
-            onChange={handleChange}
-            placeholder="Centro"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Label htmlFor="cep" className="text-white">
+              CEP
+            </Label>
+            <Input
+              id="cep"
+              name="cep"
+              value={formData.cep}
+              onChange={handleChange}
+              placeholder="00000-000"
+              maxLength={9}
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              type="button"
+              onClick={handleSearchCep}
+              disabled={loadingCep}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Search className="w-4 h-4" />
+              {loadingCep ? " Buscando..." : " Buscar"}
+            </Button>
+          </div>
         </div>
-        <div>
-          <Label htmlFor="city" className="text-white">
-            Cidade
-          </Label>
-          <Input
-            id="city"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            placeholder="Porto Alegre"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
+            <Label htmlFor="street" className="text-white">
+              Rua
+            </Label>
+            <Input
+              id="street"
+              name="street"
+              value={formData.street}
+              onChange={handleChange}
+              placeholder="Rua das Flores"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
+          <div>
+            <Label htmlFor="number" className="text-white">
+              Número
+            </Label>
+            <Input
+              id="number"
+              name="number"
+              value={formData.number}
+              onChange={handleChange}
+              placeholder="123"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
         </div>
-        <div>
-          <Label htmlFor="state" className="text-white">
-            Estado
-          </Label>
-          <Input
-            id="state"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            placeholder="RS"
-            maxLength={2}
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="complement" className="text-white">
+              Complemento
+            </Label>
+            <Input
+              id="complement"
+              name="complement"
+              value={formData.complement}
+              onChange={handleChange}
+              placeholder="Apto 201"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
+          <div>
+            <Label htmlFor="neighborhood" className="text-white">
+              Bairro
+            </Label>
+            <Input
+              id="neighborhood"
+              name="neighborhood"
+              value={formData.neighborhood}
+              onChange={handleChange}
+              placeholder="Centro"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="city" className="text-white">
+              Cidade
+            </Label>
+            <Input
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="Porto Alegre"
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
+          <div>
+            <Label htmlFor="state" className="text-white">
+              Estado
+            </Label>
+            <Input
+              id="state"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              placeholder="RS"
+              maxLength={2}
+              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+          </div>
         </div>
       </div>
+      {/* </CHANGE> */}
 
       <div>
         <Label htmlFor="password" className="text-white">
@@ -264,7 +328,7 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700">
+        <Button type="submit" disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
           {loading
             ? "Criando..."
             : `Criar ${roleToCreate === "admin" ? "Administrador" : roleToCreate === "operator" ? "Operador" : "Cliente"}`}

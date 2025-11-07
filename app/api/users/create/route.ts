@@ -26,16 +26,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (currentUser.role === "admin") {
+      // Admin can create operators and clients
       if (role !== "operator" && role !== "client") {
         return NextResponse.json({ error: "Admin pode criar apenas operadores e clientes" }, { status: 400 })
       }
     }
+    // </CHANGE>
 
     if (currentUser.role === "operator") {
       if (role !== "client") {
         return NextResponse.json({ error: "Operador pode criar apenas clientes" }, { status: 400 })
       }
     }
+
+    console.log(`[v0] Creating user with role: ${role} by ${currentUser.role}`)
 
     const result = await createUser(email, name, cpf, password, role, phone, address)
 
