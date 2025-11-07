@@ -107,6 +107,15 @@ export function Sidebar({ user }: SidebarProps) {
             Relatórios
           </Link>
         )}
+
+        {(user?.role === "super_admin" || user?.role === "admin") && (
+          <Link
+            href="/dashboard/equipamentos"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Equipamentos
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-red-300/20">
