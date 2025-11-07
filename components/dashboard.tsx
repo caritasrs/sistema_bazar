@@ -8,29 +8,21 @@ const stats = [
     title: "Doações",
     value: "1,234",
     icon: Package,
-    color: "bg-blue-50",
-    textColor: "text-blue-700",
   },
   {
     title: "Beneficiários",
     value: "567",
     icon: Users,
-    color: "bg-green-50",
-    textColor: "text-green-700",
   },
   {
     title: "Este Mês",
     value: "89",
     icon: TrendingUp,
-    color: "bg-purple-50",
-    textColor: "text-purple-700",
   },
   {
     title: "PIX Recebidos",
     value: "R$ 3.450",
     icon: DollarSign,
-    color: "bg-red-50",
-    textColor: "text-red-700",
   },
 ]
 
@@ -46,17 +38,20 @@ export function Dashboard() {
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title} className="bg-white/70 backdrop-blur-sm">
+            <Card
+              key={stat.title}
+              className="glass-effect-red border-white/20 backdrop-blur-md hover:scale-105 transition-all"
+            >
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/80">{stat.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-2xl font-bold text-white">{stat.value}</p>
                   </div>
-                  <div className={`${stat.color} rounded-lg p-3`}>
-                    <Icon className={`h-5 w-5 ${stat.textColor}`} />
+                  <div className="bg-white/20 rounded-lg p-3 backdrop-blur-sm">
+                    <Icon className="h-5 w-5 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -67,18 +62,18 @@ export function Dashboard() {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 bg-white/70 backdrop-blur-sm">
+        <Card className="lg:col-span-2 glass-effect-red border-white/20 backdrop-blur-md">
           <CardHeader>
-            <CardTitle>Atividades Recentes</CardTitle>
+            <CardTitle className="text-white">Atividades Recentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 border-b pb-4 last:border-0">
-                  <div className="h-10 w-10 rounded-full bg-red-100" />
+                <div key={i} className="flex items-center gap-4 border-b border-white/20 pb-4 last:border-0">
+                  <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm" />
                   <div className="flex-1">
-                    <p className="font-medium text-sm">Doação recebida</p>
-                    <p className="text-xs text-muted-foreground">Há {i * 2} horas</p>
+                    <p className="font-medium text-sm text-white">Doação recebida</p>
+                    <p className="text-xs text-white/70">Há {i * 2} horas</p>
                   </div>
                 </div>
               ))}
@@ -86,18 +81,18 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/70 backdrop-blur-sm">
+        <Card className="glass-effect-red border-white/20 backdrop-blur-md">
           <CardHeader>
-            <CardTitle>Informações</CardTitle>
+            <CardTitle className="text-white">Informações</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div>
-              <p className="font-semibold text-foreground">Sistema Cáritas RS</p>
-              <p className="text-xs text-muted-foreground">v3.7</p>
+              <p className="font-semibold text-white">Sistema Cáritas RS</p>
+              <p className="text-xs text-white/70">v3.7</p>
             </div>
-            <div className="border-t pt-4">
-              <p className="font-semibold text-foreground mb-2">Módulos Ativos</p>
-              <ul className="space-y-1 text-xs text-muted-foreground">
+            <div className="border-t border-white/20 pt-4">
+              <p className="font-semibold text-white mb-2">Módulos Ativos</p>
+              <ul className="space-y-1 text-xs text-white/80">
                 <li>✓ Gestão de Doações</li>
                 <li>✓ CRM Solidário</li>
                 <li>✓ Emissão de Recibos</li>

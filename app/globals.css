@@ -121,10 +121,45 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Adding fixed background image with overlay */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("/red-fabric-bg.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 }
 
 /* Adding 30% transparent background utility */
 .bg-transparent-30 {
   background-color: rgba(220, 38, 38, 0.3);
+}
+
+/* Adding modern glass morphism effect utilities */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-effect-dark {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Adding red glass morphism effect utilities with various transparency levels */
+.glass-effect-red {
+  background: rgba(220, 38, 38, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-effect-red-dark {
+  background: rgba(185, 28, 28, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

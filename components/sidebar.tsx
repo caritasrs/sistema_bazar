@@ -49,13 +49,8 @@ const menuItems = [
 
 export function Sidebar() {
   return (
-    <aside
-      className={cn(
-        "hidden w-64 border-r border-border bg-white md:flex flex-col",
-        "bg-gradient-to-b from-white to-red-50/30", // Adding subtle gradient with 30% transparency
-      )}
-    >
-      <nav className="flex-1 space-y-1 p-4">
+    <aside className="hidden w-64 border-r border-red-200 md:flex flex-col glass-effect shadow-lg">
+      <nav className="flex-1 space-y-2 p-4">
         {menuItems.map((item) => {
           const Icon = item.icon
           return (
@@ -63,9 +58,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                "text-muted-foreground hover:text-foreground hover:bg-red-50/30",
-                "first:bg-red-50/30 first:text-red-700",
+                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all",
+                "text-gray-700 hover:text-red-700 hover:bg-red-50/50 hover:shadow-sm",
+                "first:bg-red-50/50 first:text-red-700 first:shadow-sm",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -75,10 +70,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-border p-4">
-        <div className="rounded-lg bg-red-50/30 p-3 text-xs text-foreground">
-          <p className="font-semibold">Sistema Cáritas RS</p>
-          <p className="text-muted-foreground">v3.7</p>
+      <div className="border-t border-red-200 p-4">
+        <div className="rounded-lg bg-red-50/50 p-4 text-xs border border-red-200 shadow-sm">
+          <p className="font-bold text-red-700">Sistema Cáritas RS</p>
+          <p className="text-gray-600 mt-1">v3.7</p>
         </div>
       </div>
     </aside>
