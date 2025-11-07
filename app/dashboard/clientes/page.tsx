@@ -42,14 +42,14 @@ export default function ClientesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Clientes</h1>
-        <p className="text-gray-600 mt-2">Crie e gerencie clientes do sistema</p>
+        <h1 className="text-3xl font-bold text-white">Gestão de Clientes</h1>
+        <p className="text-white/90 mt-2">Crie e gerencie clientes do sistema</p>
       </div>
 
       {showForm && (
-        <Card className="border-red-200 bg-red-50/50">
+        <Card className="border-red-200/30 bg-red-900/25 backdrop-blur-md">
           <CardHeader>
-            <CardTitle>Criar Novo Cliente</CardTitle>
+            <CardTitle className="text-white">Criar Novo Cliente</CardTitle>
           </CardHeader>
           <CardContent>
             <ClientForm onSuccess={handleClientCreated} onCancel={() => setShowForm(false)} />

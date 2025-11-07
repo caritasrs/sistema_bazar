@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const currentUser = JSON.parse(authToken.value)
 
-    if (currentUser.role !== "super_admin") {
+    if (currentUser.role !== "super_admin" && currentUser.role !== "admin") {
       return NextResponse.json({ error: "Permissão negada" }, { status: 403 })
     }
 
@@ -22,14 +22,18 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("users")
       .select("id, email, name, cpf, role, status, phone, created_at, updated_at")
-      .eq("role", "operator")
+      .in("role", ["admin", "operator", "client"])
+      .order("created_at", { ascending: false })
 
     if (error) {
+      console.error("[v0] Error fetching users:", error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    console.log("[v0] Users fetched successfully:", data?.length || 0)
     return NextResponse.json({ success: true, users: data || [] })
   } catch (error) {
+    console.error("[v0] Unexpected error in users list:", error)
     return NextResponse.json({ error: "Erro ao listar usuários" }, { status: 500 })
   }
 }

@@ -115,7 +115,9 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name">Nome Completo</Label>
+          <Label htmlFor="name" className="text-white">
+            Nome Completo
+          </Label>
           <Input
             id="name"
             name="name"
@@ -123,10 +125,13 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             onChange={handleChange}
             placeholder="João Silva"
             required
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
         <div>
-          <Label htmlFor="email">E-mail</Label>
+          <Label htmlFor="email" className="text-white">
+            E-mail
+          </Label>
           <Input
             id="email"
             name="email"
@@ -135,10 +140,13 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             onChange={handleChange}
             placeholder="joao@caritas.org.br"
             required
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
         <div>
-          <Label htmlFor="cpf">CPF</Label>
+          <Label htmlFor="cpf" className="text-white">
+            CPF
+          </Label>
           <Input
             id="cpf"
             name="cpf"
@@ -146,17 +154,29 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             onChange={handleChange}
             placeholder="123.456.789-00"
             required
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
         <div>
-          <Label htmlFor="phone">Telefone</Label>
-          <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="(51) 98765-4321" />
+          <Label htmlFor="phone" className="text-white">
+            Telefone
+          </Label>
+          <Input
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="(51) 98765-4321"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="cep">CEP</Label>
+          <Label htmlFor="cep" className="text-white">
+            CEP
+          </Label>
           <Input
             id="cep"
             name="cep"
@@ -165,38 +185,56 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             onBlur={handleCepBlur}
             placeholder="00000-000"
             maxLength={9}
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
-          {loadingCep && <p className="text-xs text-gray-500 mt-1">Buscando endereço...</p>}
+          {loadingCep && <p className="text-xs text-white/70 mt-1">Buscando endereço...</p>}
         </div>
         <div className="col-span-2">
-          <Label htmlFor="street">Rua</Label>
+          <Label htmlFor="street" className="text-white">
+            Rua
+          </Label>
           <Input
             id="street"
             name="street"
             value={formData.street}
             onChange={handleChange}
             placeholder="Rua das Flores"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="neighborhood">Bairro</Label>
+          <Label htmlFor="neighborhood" className="text-white">
+            Bairro
+          </Label>
           <Input
             id="neighborhood"
             name="neighborhood"
             value={formData.neighborhood}
             onChange={handleChange}
             placeholder="Centro"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
         <div>
-          <Label htmlFor="city">Cidade</Label>
-          <Input id="city" name="city" value={formData.city} onChange={handleChange} placeholder="Porto Alegre" />
+          <Label htmlFor="city" className="text-white">
+            Cidade
+          </Label>
+          <Input
+            id="city"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            placeholder="Porto Alegre"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+          />
         </div>
         <div>
-          <Label htmlFor="state">Estado</Label>
+          <Label htmlFor="state" className="text-white">
+            Estado
+          </Label>
           <Input
             id="state"
             name="state"
@@ -204,12 +242,15 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             onChange={handleChange}
             placeholder="RS"
             maxLength={2}
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="password">Senha (12+ caracteres, maiúscula, minúscula, número e caractere especial)</Label>
+        <Label htmlFor="password" className="text-white">
+          Senha (12+ caracteres, maiúscula, minúscula, número e caractere especial)
+        </Label>
         <Input
           id="password"
           name="password"
@@ -218,6 +259,7 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
           onChange={handleChange}
           placeholder="Caritas@2025Admin!"
           required
+          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
         />
       </div>
 
@@ -227,7 +269,12 @@ export function UserForm({ roleToCreate, onSuccess, onCancel }: UserFormProps) {
             ? "Criando..."
             : `Criar ${roleToCreate === "admin" ? "Administrador" : roleToCreate === "operator" ? "Operador" : "Cliente"}`}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="flex-1 bg-transparent">
+        <Button
+          type="button"
+          onClick={onCancel}
+          variant="outline"
+          className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
+        >
           Cancelar
         </Button>
       </div>

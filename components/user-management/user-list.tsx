@@ -24,15 +24,21 @@ export function UserList() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        console.log("[v0] Fetching users list...")
         const response = await fetch("/api/users/list")
         const data = await response.json()
 
+        console.log("[v0] Users list response:", data)
+
         if (response.ok) {
           setUsers(data.users || [])
+          console.log("[v0] Users loaded:", data.users?.length || 0)
         } else {
+          console.error("[v0] Error response:", data)
           setError(data.error || "Erro ao carregar usuários")
         }
       } catch (error) {
+        console.error("[v0] Fetch error:", error)
         setError("Erro ao conectar ao servidor")
       } finally {
         setLoading(false)

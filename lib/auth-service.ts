@@ -54,6 +54,7 @@ export async function authenticateUser(
   credentials: LoginCredentials,
 ): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
+    console.log("[v0] Authenticating user:", credentials.email)
     const supabase = createClient()
 
     const { data, error } = await supabase
@@ -63,19 +64,28 @@ export async function authenticateUser(
       .eq("status", "active")
       .maybeSingle()
 
+    console.log("[v0] User lookup result:", { found: !!data, error: error?.message })
+
     if (error || !data) {
       return { success: false, error: "Usuário não encontrado" }
     }
 
+    console.log("[v0] User found, role:", data.role)
+    console.log("[v0] Comparing password, hash exists:", !!data.password_hash)
+
     const passwordMatch = await verifyPassword(credentials.password, data.password_hash)
+
+    console.log("[v0] Password match result:", passwordMatch)
 
     if (!passwordMatch) {
       return { success: false, error: "Senha incorreta" }
     }
 
     const { password_hash, ...user } = data
+    console.log("[v0] Authentication successful for:", user.email, "role:", user.role)
     return { success: true, user }
   } catch (error) {
+    console.error("[v0] Authentication error:", error)
     return { success: false, error: "Erro ao autenticar usuário" }
   }
 }
@@ -114,6 +124,14 @@ export async function createUser(
       .single()
 
     if (error) {
+      if (error.code === "23505") {
+        if (error.message.includes("users_email_key")) {
+          return { success: false, error: "Este e-mail já está cadastrado no sistema" }
+        }
+        if (error.message.includes("users_cpf_key")) {
+          return { success: false, error: "Este CPF já está cadastrado no sistema" }
+        }
+      }
       return { success: false, error: error.message }
     }
 

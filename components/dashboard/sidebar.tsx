@@ -30,13 +30,31 @@ export function Sidebar({ user }: SidebarProps) {
         <p className="text-red-100 text-sm">Gestão Solidária 3.5</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         <Link
           href="/dashboard"
           className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
         >
           Dashboard
         </Link>
+
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
+          <Link
+            href="/dashboard/bazar"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Gestão do Bazar
+          </Link>
+        )}
+
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
+          <Link
+            href="/dashboard/recibos"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Recibos
+          </Link>
+        )}
 
         {(user?.role === "super_admin" || user?.role === "admin") && (
           <Link
@@ -53,6 +71,40 @@ export function Sidebar({ user }: SidebarProps) {
             className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
           >
             Gestão de Clientes
+          </Link>
+        )}
+
+        {(user?.role === "super_admin" || user?.role === "admin") && (
+          <Link
+            href="/dashboard/marketing"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Marketing
+          </Link>
+        )}
+
+        <Link
+          href="/dashboard/agendamentos"
+          className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+        >
+          Agendamentos
+        </Link>
+
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
+          <Link
+            href="/dashboard/doadores"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Doadores
+          </Link>
+        )}
+
+        {(user?.role === "super_admin" || user?.role === "admin") && (
+          <Link
+            href="/dashboard/relatorios"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            Relatórios
           </Link>
         )}
       </nav>

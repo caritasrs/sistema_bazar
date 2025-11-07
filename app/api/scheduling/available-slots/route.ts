@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase-server"
+import { createClient } from "@/lib/supabase-admin"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     const date = searchParams.get("date")
 
