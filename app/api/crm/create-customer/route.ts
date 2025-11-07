@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const supabase = getAdminClient()
     const body = await request.json()
 
-    const { email, cpf, name, phone, address } = body
+    const { email, cpf, name, phone, address, registration_source = "operator_created" } = body
 
     // Validate CPF
     if (!validateCPF(cpf)) {
@@ -18,10 +18,9 @@ export async function POST(request: Request) {
     const { data: existingUser } = await supabase.from("users").select("id").eq("cpf", cpf).single()
 
     if (existingUser) {
-      return NextResponse.json({ error: "Customer already exists" }, { status: 409 })
+      return NextResponse.json({ error: "Customer already exists", customer: existingUser }, { status: 409 })
     }
 
-    // Create customer
     const { data: customer, error } = await supabase
       .from("users")
       .insert([
@@ -33,12 +32,15 @@ export async function POST(request: Request) {
           address,
           status: "active",
           email_verified: false,
+          registration_source, // Track how the account was created
         },
       ])
       .select()
       .single()
 
     if (error) throw error
+
+    console.log("[v0] Customer created:", { id: customer.id, registration_source })
 
     // Log audit
     await supabase.from("audit_logs").insert([

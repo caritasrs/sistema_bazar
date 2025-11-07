@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CalendarPicker } from "@/components/scheduling/calendar-picker"
-import { TimeSlots } from "@/components/scheduling/time-slots"
+import { EnhancedCalendar } from "@/components/scheduling/enhanced-calendar"
+import { EnhancedTimeSlots } from "@/components/scheduling/enhanced-time-slots"
 import { formatCPF } from "@/lib/format-utils"
+import { CheckCircle, ArrowLeft } from "lucide-react"
 
 export default function SchedulingPage() {
   const [step, setStep] = useState<"info" | "date" | "time" | "confirm">("info")
@@ -52,7 +53,6 @@ export default function SchedulingPage() {
   const handleConfirm = async () => {
     setLoading(true)
     try {
-      // First, create or get customer
       let customerId = null
       try {
         const getResponse = await fetch("/api/crm/get-customer", {
@@ -65,23 +65,27 @@ export default function SchedulingPage() {
           const customer = await getResponse.json()
           customerId = customer.id
         } else {
-          // Create new customer
           const createResponse = await fetch("/api/crm/create-customer", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(customerData),
+            body: JSON.stringify({
+              ...customerData,
+              registration_source: "self_registered",
+            }),
           })
 
           if (createResponse.ok) {
             const customer = await createResponse.json()
             customerId = customer.id
+          } else if (createResponse.status === 409) {
+            const existingCustomer = await createResponse.json()
+            customerId = existingCustomer.customer?.id
           }
         }
       } catch (error) {
         console.error("Error with customer:", error)
       }
 
-      // Create schedule
       const response = await fetch("/api/scheduling/create-schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,13 +107,12 @@ export default function SchedulingPage() {
         text: "Agendamento realizado com sucesso! Você receberá uma confirmação por e-mail.",
       })
 
-      // Reset form
       setTimeout(() => {
         setStep("info")
         setCustomerData({ email: "", cpf: "", name: "", phone: "" })
         setSelectedDate("")
         setSelectedTime("")
-      }, 2000)
+      }, 3000)
     } catch (error) {
       setMessage({
         type: "error",
@@ -121,67 +124,84 @@ export default function SchedulingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-red-600 via-orange-500 to-red-700 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-red-600 mb-2">Agende sua Visita</h1>
-          <p className="text-gray-600">Bazar Solidário Cáritas RS</p>
+          <div className="bg-white w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-red-600" style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }} />
+          </div>
+          <h1 className="text-5xl font-bold text-white mb-2 drop-shadow-lg">Agende sua Visita</h1>
+          <p className="text-white/90 text-lg">Bazar Solidário Cáritas RS</p>
         </div>
 
         {message && (
-          <Alert className={message.type === "error" ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}>
-            <AlertDescription className={message.type === "error" ? "text-red-800" : "text-green-800"}>
+          <Alert className={message.type === "error" ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"}>
+            <AlertDescription
+              className={
+                message.type === "error"
+                  ? "text-red-900 font-medium"
+                  : "text-green-900 font-medium flex items-center gap-2"
+              }
+            >
+              {message.type === "success" && <CheckCircle className="w-5 h-5" />}
               {message.text}
             </AlertDescription>
           </Alert>
         )}
 
         {step === "info" && (
-          <Card className="bg-white/95 border-red-200">
-            <CardHeader>
-              <CardTitle>Seus Dados</CardTitle>
-              <CardDescription>Informações para agendamento</CardDescription>
+          <Card className="bg-white/95 border-2 border-white shadow-2xl">
+            <CardHeader className="bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-t-lg">
+              <CardTitle className="text-2xl">Seus Dados</CardTitle>
+              <CardDescription className="text-white/90">Informações para agendamento</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               <div>
-                <Label>Nome Completo</Label>
+                <Label className="text-gray-700 font-semibold">Nome Completo</Label>
                 <Input
                   placeholder="João da Silva"
                   value={customerData.name}
                   onChange={(e) => handleCustomerDataChange("name", e.target.value)}
+                  className="border-2 border-gray-300 focus:border-red-500"
                 />
               </div>
 
               <div>
-                <Label>E-mail</Label>
+                <Label className="text-gray-700 font-semibold">E-mail</Label>
                 <Input
                   type="email"
                   placeholder="seu@email.com"
                   value={customerData.email}
                   onChange={(e) => handleCustomerDataChange("email", e.target.value)}
+                  className="border-2 border-gray-300 focus:border-red-500"
                 />
               </div>
 
               <div>
-                <Label>CPF</Label>
+                <Label className="text-gray-700 font-semibold">CPF</Label>
                 <Input
                   placeholder="123.456.789-00"
                   value={customerData.cpf}
                   onChange={(e) => handleCustomerDataChange("cpf", e.target.value)}
+                  className="border-2 border-gray-300 focus:border-red-500"
                 />
               </div>
 
               <div>
-                <Label>Telefone</Label>
+                <Label className="text-gray-700 font-semibold">Telefone</Label>
                 <Input
                   placeholder="(51) 99999-9999"
                   value={customerData.phone}
                   onChange={(e) => handleCustomerDataChange("phone", e.target.value)}
+                  className="border-2 border-gray-300 focus:border-red-500"
                 />
               </div>
 
-              <Button onClick={handleContinueInfo} className="w-full bg-red-600 hover:bg-red-700">
-                Continuar
+              <Button
+                onClick={handleContinueInfo}
+                className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-lg h-12 font-semibold shadow-lg"
+              >
+                Continuar para Agendamento
               </Button>
             </CardContent>
           </Card>
@@ -189,8 +209,13 @@ export default function SchedulingPage() {
 
         {step === "date" && (
           <div className="space-y-4">
-            <CalendarPicker onDateSelect={handleDateSelect} selectedDate={selectedDate} />
-            <Button variant="outline" onClick={() => setStep("info")} className="w-full">
+            <EnhancedCalendar onDateSelect={handleDateSelect} selectedDate={selectedDate} showAvailabilityOnly={true} />
+            <Button
+              variant="outline"
+              onClick={() => setStep("info")}
+              className="w-full bg-white hover:bg-gray-50 border-2 border-gray-300 h-12 font-semibold"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
           </div>
@@ -198,47 +223,71 @@ export default function SchedulingPage() {
 
         {step === "time" && (
           <div className="space-y-4">
-            <TimeSlots date={selectedDate} onTimeSelect={handleTimeSelect} selectedTime={selectedTime} />
-            <Button variant="outline" onClick={() => setStep("date")} className="w-full">
+            <EnhancedTimeSlots date={selectedDate} onTimeSelect={handleTimeSelect} selectedTime={selectedTime} />
+            <Button
+              variant="outline"
+              onClick={() => setStep("date")}
+              className="w-full bg-white hover:bg-gray-50 border-2 border-gray-300 h-12 font-semibold"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
           </div>
         )}
 
         {step === "confirm" && (
-          <Card className="bg-white/95 border-red-200">
-            <CardHeader>
-              <CardTitle>Confirme seu Agendamento</CardTitle>
+          <Card className="bg-white/95 border-2 border-white shadow-2xl">
+            <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <CheckCircle className="w-6 h-6" />
+                Confirme seu Agendamento
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 bg-red-50 p-4 rounded-lg">
-                <div>
-                  <span className="font-semibold">Nome:</span>
-                  <div className="text-gray-700">{customerData.name}</div>
+            <CardContent className="space-y-4 p-6">
+              <div className="space-y-3 bg-gradient-to-br from-gray-50 to-white p-6 rounded-lg border-2 border-gray-200">
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="font-bold text-gray-700">Nome:</span>
+                  <span className="text-gray-900">{customerData.name}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">E-mail:</span>
-                  <div className="text-gray-700">{customerData.email}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="font-bold text-gray-700">E-mail:</span>
+                  <span className="text-gray-900">{customerData.email}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">CPF:</span>
-                  <div className="text-gray-700">{customerData.cpf}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="font-bold text-gray-700">CPF:</span>
+                  <span className="text-gray-900">{customerData.cpf}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">Data:</span>
-                  <div className="text-gray-700">{selectedDate}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="font-bold text-gray-700">Data:</span>
+                  <span className="text-gray-900 font-semibold">
+                    {new Date(selectedDate).toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
-                <div>
-                  <span className="font-semibold">Horário:</span>
-                  <div className="text-gray-700">{selectedTime}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="font-bold text-gray-700">Horário:</span>
+                  <span className="text-gray-900 font-semibold">{selectedTime}</span>
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep("time")} className="flex-1">
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep("time")}
+                  className="flex-1 border-2 border-gray-300 h-12 font-semibold"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Button>
-                <Button onClick={handleConfirm} disabled={loading} className="flex-1 bg-red-600 hover:bg-red-700">
+                <Button
+                  onClick={handleConfirm}
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-12 font-semibold shadow-lg"
+                >
                   {loading ? "Processando..." : "Confirmar Agendamento"}
                 </Button>
               </div>

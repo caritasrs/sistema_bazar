@@ -20,28 +20,43 @@ export async function GET(request: Request) {
 
     if (error) throw error
 
-    // Define business hours (08:00 to 17:00, 30-minute slots)
     const businessHours = {
-      start: 8,
-      end: 17,
-      slotDuration: 30, // minutes
+      morningStart: 8,
+      morningEnd: 12,
+      afternoonStart: 13,
+      afternoonEnd: 18,
+      slotDuration: 60, // 1 hour in minutes
       maxCapacity: 2, // 2 people per slot
     }
 
     const bookedTimes = schedules.map((s) => s.schedule_time)
     const availableSlots = []
 
-    for (let hour = businessHours.start; hour < businessHours.end; hour++) {
-      for (let minute = 0; minute < 60; minute += businessHours.slotDuration) {
-        const timeStr = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
-        const bookingsForSlot = bookedTimes.filter((t) => t === timeStr).length
+    // Morning slots: 8h, 9h, 10h, 11h, 12h
+    for (let hour = businessHours.morningStart; hour <= businessHours.morningEnd; hour++) {
+      const timeStr = `${String(hour).padStart(2, "0")}:00:00`
+      const bookingsForSlot = bookedTimes.filter((t) => t === timeStr).length
 
-        if (bookingsForSlot < businessHours.maxCapacity) {
-          availableSlots.push({
-            time: timeStr,
-            capacity: businessHours.maxCapacity - bookingsForSlot,
-          })
-        }
+      if (bookingsForSlot < businessHours.maxCapacity) {
+        availableSlots.push({
+          time: timeStr,
+          capacity: businessHours.maxCapacity - bookingsForSlot,
+          display: `${String(hour).padStart(2, "0")}:00`,
+        })
+      }
+    }
+
+    // Afternoon slots: 13h, 14h, 15h, 16h, 17h, 18h
+    for (let hour = businessHours.afternoonStart; hour <= businessHours.afternoonEnd; hour++) {
+      const timeStr = `${String(hour).padStart(2, "0")}:00:00`
+      const bookingsForSlot = bookedTimes.filter((t) => t === timeStr).length
+
+      if (bookingsForSlot < businessHours.maxCapacity) {
+        availableSlots.push({
+          time: timeStr,
+          capacity: businessHours.maxCapacity - bookingsForSlot,
+          display: `${String(hour).padStart(2, "0")}:00`,
+        })
       }
     }
 

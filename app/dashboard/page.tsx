@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { Key } from "lucide-react"
 import { ChangePasswordModal } from "@/components/change-password-modal"
+import { SelfRegisteredClientsWidget } from "@/components/dashboard/self-registered-clients-widget"
 
 export default function DashboardHome() {
   const [user, setUser] = useState<any>(null)
@@ -96,6 +97,10 @@ export default function DashboardHome() {
             </Card>
           )}
         </div>
+
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
+          <SelfRegisteredClientsWidget />
+        )}
       </div>
 
       <ChangePasswordModal

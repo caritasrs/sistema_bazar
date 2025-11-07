@@ -1,12 +1,12 @@
-import { createClient } from "@/lib/supabase-server"
+import { createClient } from "@/lib/supabase-admin"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
 
-    const { user_id, schedule_date, schedule_time, duration_minutes, notes } = body
+    const { user_id, schedule_date, schedule_time, notes } = body
 
     if (!user_id || !schedule_date || !schedule_time) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -26,7 +26,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "This time slot is full" }, { status: 409 })
     }
 
-    // Create schedule
     const { data: schedule, error } = await supabase
       .from("schedules")
       .insert([
@@ -34,7 +33,7 @@ export async function POST(request: Request) {
           user_id,
           schedule_date,
           schedule_time,
-          duration_minutes: duration_minutes || 30,
+          duration_minutes: 60,
           status: "confirmed",
           notes,
         },
