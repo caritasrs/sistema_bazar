@@ -33,7 +33,7 @@ export function Sidebar({ user }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-2">
         <Link
           href="/dashboard"
-          className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg"
+          className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
         >
           Dashboard
         </Link>
@@ -41,7 +41,7 @@ export function Sidebar({ user }: SidebarProps) {
         {(user?.role === "super_admin" || user?.role === "admin") && (
           <Link
             href="/dashboard/usuarios"
-            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
           >
             Gestão de Usuários
           </Link>
@@ -50,7 +50,7 @@ export function Sidebar({ user }: SidebarProps) {
         {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
           <Link
             href="/dashboard/clientes"
-            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg"
+            className="block px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
           >
             Gestão de Clientes
           </Link>
