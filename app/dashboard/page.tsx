@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { Key } from "lucide-react"
 import { ChangePasswordModal } from "@/components/change-password-modal"
 import { SelfRegisteredClientsWidget } from "@/components/dashboard/self-registered-clients-widget"
+import { ReleaseNotesCard } from "@/components/dashboard/release-notes"
 
 export default function DashboardHome() {
   const [user, setUser] = useState<any>(null)
@@ -96,6 +97,8 @@ export default function DashboardHome() {
               </CardContent>
             </Card>
           )}
+
+          {user?.role === "super_admin" && <ReleaseNotesCard />}
         </div>
 
         {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
