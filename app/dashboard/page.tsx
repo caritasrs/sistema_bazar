@@ -29,26 +29,28 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Bem-vindo ao Dashboard</h1>
-        <p className="text-gray-600 mt-2">
-          {user?.role === "super_admin" && "Gerencie operadores, clientes e sistema"}
+      <div className="bg-red-900/25 backdrop-blur-md rounded-2xl p-6 border border-red-300/20">
+        <h1 className="text-3xl font-bold text-white">Bem-vindo ao Dashboard</h1>
+        <p className="text-red-50 mt-2">
+          {user?.role === "super_admin" && "Gerencie administradores, operadores, clientes e sistema"}
+          {user?.role === "admin" && "Gerencie operadores, clientes e acesse todos os recursos"}
           {user?.role === "operator" && "Gerencie clientes e vendas"}
           {user?.role === "client" && "Acesse seus pedidos e agendamentos"}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="bg-red-900/25 backdrop-blur-md border-red-300/20">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Seu Perfil</CardTitle>
+            <CardTitle className="text-sm font-medium text-red-50">Seu Perfil</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="font-semibold">{user?.name}</p>
-              <p className="text-sm text-gray-600">{user?.email}</p>
-              <p className="text-xs bg-red-50 text-red-700 px-2 py-1 rounded w-fit">
+              <p className="font-semibold text-white">{user?.name}</p>
+              <p className="text-sm text-red-50">{user?.email}</p>
+              <p className="text-xs bg-red-700/40 text-white px-2 py-1 rounded w-fit backdrop-blur-sm">
                 {user?.role === "super_admin" && "Super Admin"}
+                {user?.role === "admin" && "Administrador"}
                 {user?.role === "operator" && "Operador"}
                 {user?.role === "client" && "Cliente"}
               </p>
@@ -56,25 +58,25 @@ export default function DashboardHome() {
           </CardContent>
         </Card>
 
-        {(user?.role === "super_admin" || user?.role === "operator") && (
-          <Card>
+        {(user?.role === "super_admin" || user?.role === "admin" || user?.role === "operator") && (
+          <Card className="bg-red-900/25 backdrop-blur-md border-red-300/20">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">Ações Rápidas</CardTitle>
+              <CardTitle className="text-sm font-medium text-red-50">Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {user?.role === "super_admin" && (
                   <>
-                    <a href="/dashboard/usuarios" className="block text-red-600 hover:underline text-sm">
-                      → Gerenciar Operadores
+                    <a href="/dashboard/usuarios" className="block text-white hover:text-red-200 text-sm font-medium">
+                      → Gerenciar Usuários
                     </a>
-                    <a href="/dashboard/clientes" className="block text-red-600 hover:underline text-sm">
+                    <a href="/dashboard/clientes" className="block text-white hover:text-red-200 text-sm font-medium">
                       → Gerenciar Clientes
                     </a>
                   </>
                 )}
-                {user?.role === "operator" && (
-                  <a href="/dashboard/clientes" className="block text-red-600 hover:underline text-sm">
+                {(user?.role === "admin" || user?.role === "operator") && (
+                  <a href="/dashboard/clientes" className="block text-white hover:text-red-200 text-sm font-medium">
                     → Gerenciar Clientes
                   </a>
                 )}

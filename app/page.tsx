@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Heart, Calendar, ShoppingBag, FileText, BarChart3, Users } from "lucide-react"
+import { CaritasLogo } from "@/components/caritas-logo"
+import { Calendar, ShoppingBag, FileText, BarChart3, Users } from "lucide-react"
 
 export default function Home() {
   return (
@@ -12,8 +13,8 @@ export default function Home() {
       <header className="glass-effect-red text-white shadow-lg sticky top-0 z-50 border-b border-red-300/30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shadow-md backdrop-blur-sm">
-              <Heart className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-md p-2">
+              <CaritasLogo className="w-full h-full" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Cáritas RS</h1>
@@ -76,8 +77,8 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="glass-effect-red border-white/20 hover:shadow-xl transition-all hover:scale-105">
               <CardHeader>
-                <div className="w-14 h-14 bg-white/20 text-white rounded-xl flex items-center justify-center mb-4 shadow-md backdrop-blur-sm">
-                  <Heart className="w-7 h-7" />
+                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-4 shadow-md p-2">
+                  <CaritasLogo className="w-full h-full" />
                 </div>
                 <CardTitle className="text-xl text-white">Doações Solidárias</CardTitle>
               </CardHeader>
@@ -199,8 +200,8 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                  <Heart className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1.5">
+                  <CaritasLogo className="w-full h-full" />
                 </div>
                 <h4 className="font-bold text-white text-lg">Cáritas RS</h4>
               </div>

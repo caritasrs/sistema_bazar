@@ -37,8 +37,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${geistSans.className} font-sans antialiased`}>
-        {children}
+      <body
+        className={`${geistSans.className} font-sans antialiased bg-cover bg-center bg-fixed relative`}
+        style={{
+          backgroundImage: "url('/red-fabric-bg.png')",
+        }}
+      >
+        {/* Dark overlay for better contrast */}
+        <div className="fixed inset-0 bg-black/30 pointer-events-none z-0" />
+
+        {/* Content wrapper with z-index to appear above overlay */}
+        <div className="relative z-10">{children}</div>
         <Analytics />
       </body>
     </html>

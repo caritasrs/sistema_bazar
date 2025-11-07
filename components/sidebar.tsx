@@ -3,6 +3,7 @@
 import { Package, Users, FileText, BarChart3, Settings, Calendar, Truck, Home } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { CaritasLogo } from "./caritas-logo"
 
 const menuItems = [
   {
@@ -50,6 +51,19 @@ const menuItems = [
 export function Sidebar() {
   return (
     <aside className="hidden w-64 border-r border-red-200 md:flex flex-col glass-effect shadow-lg">
+      <div className="border-b border-red-200 p-4">
+        <div className="flex items-center gap-2">
+          <div className="relative h-10 w-10 rounded-lg bg-white p-2 shadow">
+            <CaritasLogo className="h-full w-full" />
+          </div>
+          {/* </CHANGE> */}
+          <div>
+            <p className="text-sm font-bold text-red-700">CÁRITAS RS</p>
+            <p className="text-xs text-gray-600">Bazar Solidário</p>
+          </div>
+        </div>
+      </div>
+
       <nav className="flex-1 space-y-2 p-4">
         {menuItems.map((item) => {
           const Icon = item.icon

@@ -1,6 +1,7 @@
 "use client"
-import { Menu, Heart } from "lucide-react"
+import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { CaritasLogo } from "./caritas-logo"
 
 export function Header() {
   return (
@@ -11,12 +12,12 @@ export function Header() {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <div className="relative h-12 w-12 rounded-lg bg-red-600 p-2 shadow-md">
-              <Heart className="h-full w-full text-white" />
+            <div className="relative h-12 w-12 rounded-lg bg-white p-2 shadow-md">
+              <CaritasLogo className="h-full w-full" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold text-red-700">Cáritas RS</h1>
-              <p className="text-xs text-red-600 font-medium">Bazar Solidário</p>
+              <h1 className="text-lg font-bold text-red-700">CÁRITAS BRASILEIRA</h1>
+              <p className="text-xs text-red-600 font-medium">Rio Grande do Sul</p>
             </div>
           </div>
         </div>
