@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Calendar, Clock, User, Phone, Mail, Edit, Trash2, AlertCircle, Info } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Calendar, Clock, User, Phone, Mail, Edit, Trash2, AlertCircle, Info, Plus, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Schedule {
@@ -46,6 +47,8 @@ export function AdminScheduleView() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [clientSearch, setClientSearch] = useState("")
   const [clients, setClients] = useState<any[]>([])
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("")
+  const [selectedClient, setSelectedClient] = useState<any>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -141,6 +144,40 @@ export function AdminScheduleView() {
       }
     } catch (error) {
       toast({ title: "Erro ao atualizar agendamento", variant: "destructive" })
+    }
+  }
+
+  const handleAddSchedule = async () => {
+    if (!selectedClient || !selectedTimeSlot) {
+      toast({ title: "Selecione um cliente e horário", variant: "destructive" })
+      return
+    }
+
+    try {
+      const response = await fetch("/api/scheduling/create-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: selectedClient.id,
+          schedule_date: selectedDate.toISOString().split("T")[0],
+          schedule_time: selectedTimeSlot,
+          notes: "",
+        }),
+      })
+
+      if (response.ok) {
+        toast({ title: "Agendamento criado com sucesso!" })
+        setShowAddModal(false)
+        setSelectedClient(null)
+        setClientSearch("")
+        setClients([])
+        fetchSchedules()
+      } else {
+        const data = await response.json()
+        toast({ title: data.error || "Erro ao criar agendamento", variant: "destructive" })
+      }
+    } catch (error) {
+      toast({ title: "Erro ao criar agendamento", variant: "destructive" })
     }
   }
 
@@ -276,53 +313,82 @@ export function AdminScheduleView() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {schedulesInSlot.length === 0 ? (
-                    <div className="text-center text-gray-500 py-4 italic">Nenhum agendamento</div>
-                  ) : (
-                    schedulesInSlot.map((schedule) => (
-                      <div
-                        key={schedule.id}
-                        className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-2"
+                    <div className="space-y-2">
+                      <div className="text-center text-gray-500 py-2 italic text-sm">Nenhum agendamento</div>
+                      <Button
+                        size="sm"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          setSelectedTimeSlot(timeSlot)
+                          setShowAddModal(true)
+                        }}
                       >
-                        <div className="flex items-start gap-2">
-                          <User className="w-4 h-4 mt-0.5 text-blue-600" />
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-900">{schedule.user.name}</div>
+                        <Plus className="w-4 h-4 mr-1" />
+                        Agendar Cliente
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {schedulesInSlot.map((schedule) => (
+                        <div
+                          key={schedule.id}
+                          className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-2"
+                        >
+                          <div className="flex items-start gap-2">
+                            <User className="w-4 h-4 mt-0.5 text-blue-600" />
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{schedule.user.name}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Mail className="w-3 h-3" />
+                            <span className="truncate">{schedule.user.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="w-3 h-3" />
+                            <span>{schedule.user.phone || "Não informado"}</span>
+                          </div>
+                          {schedule.notes && <div className="text-xs text-gray-500 italic">Obs: {schedule.notes}</div>}
+                          <div className="flex gap-2 pt-2 border-t">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 bg-transparent"
+                              onClick={() => {
+                                setEditingSchedule(schedule)
+                                setShowEditModal(true)
+                              }}
+                            >
+                              <Edit className="w-3 h-3 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="flex-1"
+                              onClick={() => handleDeleteSchedule(schedule.id)}
+                            >
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              Cancelar
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Mail className="w-3 h-3" />
-                          <span className="truncate">{schedule.user.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Phone className="w-3 h-3" />
-                          <span>{schedule.user.phone || "Não informado"}</span>
-                        </div>
-                        {schedule.notes && <div className="text-xs text-gray-500 italic">Obs: {schedule.notes}</div>}
-                        <div className="flex gap-2 pt-2 border-t">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 bg-transparent"
-                            onClick={() => {
-                              setEditingSchedule(schedule)
-                              setShowEditModal(true)
-                            }}
-                          >
-                            <Edit className="w-3 h-3 mr-1" />
-                            Editar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="flex-1"
-                            onClick={() => handleDeleteSchedule(schedule.id)}
-                          >
-                            <Trash2 className="w-3 h-3 mr-1" />
-                            Cancelar
-                          </Button>
-                        </div>
-                      </div>
-                    ))
+                      ))}
+                      {available > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full border-green-300 text-green-700 hover:bg-green-50 bg-transparent"
+                          onClick={() => {
+                            setSelectedTimeSlot(timeSlot)
+                            setShowAddModal(true)
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Adicionar Mais ({available} {available === 1 ? "vaga" : "vagas"})
+                        </Button>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -330,6 +396,73 @@ export function AdminScheduleView() {
           })}
         </div>
       )}
+
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="bg-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agendar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Data e Horário</Label>
+              <p className="font-semibold text-gray-900">
+                {selectedDate.toLocaleDateString("pt-BR")} às {selectedTimeSlot.substring(0, 5)}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="client-search">Buscar Cliente</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="client-search"
+                  placeholder="Digite nome, email ou CPF..."
+                  value={clientSearch}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value)
+                    searchClients(e.target.value)
+                  }}
+                  className="flex-1"
+                />
+                <Button variant="outline" size="icon">
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            {clients.length > 0 && (
+              <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-2">
+                {clients.map((client) => (
+                  <div
+                    key={client.id}
+                    className={`p-3 rounded cursor-pointer transition-colors ${
+                      selectedClient?.id === client.id
+                        ? "bg-blue-100 border-2 border-blue-500"
+                        : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
+                    }`}
+                    onClick={() => setSelectedClient(client)}
+                  >
+                    <div className="font-semibold text-gray-900">{client.name}</div>
+                    <div className="text-sm text-gray-600">{client.email}</div>
+                    <div className="text-xs text-gray-500">CPF: {client.cpf}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {selectedClient && (
+              <div className="bg-green-50 border border-green-300 rounded-lg p-3">
+                <div className="font-semibold text-green-900">Cliente Selecionado:</div>
+                <div className="text-sm text-green-800">{selectedClient.name}</div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddSchedule} disabled={!selectedClient}>
+              Confirmar Agendamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
         <DialogContent className="bg-white">
