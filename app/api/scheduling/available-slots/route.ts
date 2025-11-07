@@ -1,6 +1,21 @@
 import { createClient } from "@/lib/supabase-admin"
 import { NextResponse } from "next/server"
 
+const BRAZILIAN_HOLIDAYS_2025 = [
+  "2025-01-01",
+  "2025-02-24",
+  "2025-02-25",
+  "2025-04-18",
+  "2025-04-21",
+  "2025-05-01",
+  "2025-06-19",
+  "2025-09-07",
+  "2025-10-12",
+  "2025-11-02",
+  "2025-11-15",
+  "2025-12-25",
+]
+
 export async function GET(request: Request) {
   try {
     const supabase = createClient()
@@ -11,7 +26,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Date is required" }, { status: 400 })
     }
 
-    // Get all schedules for the date
+    const dateObj = new Date(date + "T00:00:00")
+    const dayOfWeek = dateObj.getDay()
+
+    if (dayOfWeek === 0 || dayOfWeek === 6 || BRAZILIAN_HOLIDAYS_2025.includes(date)) {
+      return NextResponse.json([]) // No slots available on weekends/holidays
+    }
+
     const { data: schedules, error } = await supabase
       .from("schedules")
       .select("schedule_time")
@@ -25,14 +46,12 @@ export async function GET(request: Request) {
       morningEnd: 12,
       afternoonStart: 13,
       afternoonEnd: 18,
-      slotDuration: 60, // 1 hour in minutes
-      maxCapacity: 2, // 2 people per slot
+      maxCapacity: 2,
     }
 
     const bookedTimes = schedules.map((s) => s.schedule_time)
     const availableSlots = []
 
-    // Morning slots: 8h, 9h, 10h, 11h, 12h
     for (let hour = businessHours.morningStart; hour <= businessHours.morningEnd; hour++) {
       const timeStr = `${String(hour).padStart(2, "0")}:00:00`
       const bookingsForSlot = bookedTimes.filter((t) => t === timeStr).length
@@ -46,7 +65,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // Afternoon slots: 13h, 14h, 15h, 16h, 17h, 18h
     for (let hour = businessHours.afternoonStart; hour <= businessHours.afternoonEnd; hour++) {
       const timeStr = `${String(hour).padStart(2, "0")}:00:00`
       const bookingsForSlot = bookedTimes.filter((t) => t === timeStr).length
