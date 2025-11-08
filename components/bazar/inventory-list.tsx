@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Package, Search, Pencil, Trash2 } from "lucide-react"
+import { Package, Search, Pencil, Trash2, QrCode } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -56,6 +56,7 @@ export default function InventoryList() {
   const [loading, setLoading] = useState(true)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Item | null>(null)
+  const [viewingQRCode, setViewingQRCode] = useState<Item | null>(null)
 
   useEffect(() => {
     fetchItems()
@@ -200,7 +201,16 @@ export default function InventoryList() {
                     {item.category && <p className="text-xs text-red-200">Categoria: {item.category.name}</p>}
                     {item.batch && <p className="text-xs text-red-200">Lote: {item.batch.batch_code}</p>}
                   </div>
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    <Button
+                      onClick={() => setViewingQRCode(item)}
+                      size="sm"
+                      variant="outline"
+                      className="bg-purple-600/20 border-purple-400/40 text-purple-100 hover:bg-purple-600/30 hover:text-white"
+                    >
+                      <QrCode className="h-3 w-3 mr-1" />
+                      QR Code
+                    </Button>
                     <Button
                       onClick={() => setEditingItem(item)}
                       size="sm"
@@ -226,6 +236,60 @@ export default function InventoryList() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!viewingQRCode} onOpenChange={() => setViewingQRCode(null)}>
+        <DialogContent className="bg-red-950/95 border-red-300/20 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">QR Code do Produto</DialogTitle>
+            <DialogDescription className="text-red-200">
+              Visualize e imprima o QR Code para identificação do produto
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewingQRCode && (
+            <div className="space-y-4">
+              <div className="bg-white p-6 rounded-lg">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="text-center">
+                    <h3 className="font-bold text-gray-900 text-lg">{viewingQRCode.description}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {viewingQRCode.size && `Tamanho: ${viewingQRCode.size} | `}
+                      Condição: {viewingQRCode.condition}
+                    </p>
+                    <p className="text-red-600 font-bold text-xl mt-2">R$ {viewingQRCode.symbolic_value.toFixed(2)}</p>
+                  </div>
+                  <div className="border-4 border-gray-800 p-4 rounded-lg">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${viewingQRCode.id}`}
+                      alt="QR Code"
+                      className="w-48 h-48"
+                    />
+                  </div>
+                  <p className="text-gray-500 text-xs font-mono">{viewingQRCode.id}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    window.open(`/labels/${viewingQRCode.id}`, "_blank")
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  Imprimir Etiqueta
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setViewingQRCode(null)}
+                  className="bg-white/10 text-white hover:bg-white/20"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
         <DialogContent className="bg-red-950/95 border-red-300/20 text-white max-w-2xl">
