@@ -1,24 +1,29 @@
-import { createClient } from "@/lib/supabase-server"
+import { getAdminClient } from "@/lib/supabase-admin"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    console.log("[v0] Fetching receipts with admin client")
+    const supabase = getAdminClient()
 
     const { data: receipts, error } = await supabase
       .from("receipts")
       .select(`
         *,
-        customer:users(name, cpf)
+        customer:users!receipts_customer_id_fkey(name, cpf)
       `)
       .order("created_at", { ascending: false })
       .limit(100)
 
-    if (error) throw error
+    if (error) {
+      console.error("[v0] Error fetching receipts:", error)
+      return NextResponse.json([])
+    }
 
-    return NextResponse.json(receipts)
+    console.log("[v0] Receipts fetched successfully:", receipts?.length || 0)
+    return NextResponse.json(receipts || [])
   } catch (error) {
-    console.error("Error fetching receipts:", error)
-    return NextResponse.json({ error: "Failed to fetch receipts" }, { status: 500 })
+    console.error("[v0] Exception fetching receipts:", error)
+    return NextResponse.json([])
   }
 }

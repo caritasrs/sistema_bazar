@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { QrCode, Trash2, CreditCard, DollarSign, Printer } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface CartItem {
   id: string
@@ -16,11 +17,49 @@ interface CartItem {
   quantity: number
 }
 
+interface Customer {
+  id: string
+  name: string
+  cpf: string
+}
+
 export function SalesInterface() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [qrCode, setQrCode] = useState("")
   const [isScanning, setIsScanning] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "cash">("cash")
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("")
+  const [operatorName, setOperatorName] = useState("")
+
+  useEffect(() => {
+    loadCustomers()
+    loadOperatorInfo()
+  }, [])
+
+  const loadCustomers = async () => {
+    try {
+      const response = await fetch("/api/clients/list")
+      if (response.ok) {
+        const data = await response.json()
+        setCustomers(data.clients || [])
+      }
+    } catch (error) {
+      console.error("[v0] Error loading customers:", error)
+    }
+  }
+
+  const loadOperatorInfo = async () => {
+    try {
+      const response = await fetch("/api/auth/verify-session")
+      if (response.ok) {
+        const data = await response.json()
+        setOperatorName(data.user?.name || data.user?.email || "Operador")
+      }
+    } catch (error) {
+      console.error("[v0] Error loading operator info:", error)
+    }
+  }
 
   const handleScanQRCode = async () => {
     if (!qrCode.trim()) return
@@ -62,27 +101,50 @@ export function SalesInterface() {
   const total = cart.reduce((sum, item) => sum + item.symbolic_value * item.quantity, 0)
 
   const handleCheckout = async () => {
-    if (cart.length === 0) return
+    if (cart.length === 0) {
+      alert("Carrinho vazio")
+      return
+    }
+
+    if (!selectedCustomerId) {
+      alert("Por favor, selecione um cliente para a venda")
+      return
+    }
 
     try {
-      const response = await fetch("/api/bazar/sales", {
+      console.log("[v0] Starting checkout with customer:", selectedCustomerId)
+      const response = await fetch("/api/sales/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: cart,
+          customer_id: selectedCustomerId,
+          items: cart.map((item) => ({
+            item_id: item.id,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.symbolic_value,
+          })),
           payment_method: paymentMethod,
-          total_amount: total,
+          operator_name: operatorName,
         }),
       })
 
-      const result = await response.json()
-      if (result.success) {
-        alert("Venda realizada com sucesso!")
-        setCart([])
-        // Abrir impressão do recibo
-        window.open(`/receipts/${result.receipt_id}`, "_blank")
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error("[v0] Checkout error:", errorData)
+        alert(errorData.error || "Erro ao processar venda")
+        return
       }
+
+      const result = await response.json()
+      console.log("[v0] Checkout successful:", result)
+      alert("Venda realizada com sucesso!")
+      setCart([])
+      setSelectedCustomerId("")
+      // Abrir impressão do recibo
+      window.open(`/receipts/${result.receipt.id}`, "_blank")
     } catch (error) {
+      console.error("[v0] Checkout exception:", error)
       alert("Erro ao processar venda")
     }
   }
@@ -166,31 +228,51 @@ export function SalesInterface() {
       <Card className="p-6 bg-red-900/10 backdrop-blur-md border-red-300/20">
         <h2 className="text-xl font-bold text-white mb-4">Pagamento</h2>
 
-        <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "pix" | "cash")}>
-          <TabsList className="grid w-full grid-cols-2 bg-red-900/20">
-            <TabsTrigger value="cash" className="data-[state=active]:bg-red-700/50">
-              <DollarSign className="h-4 w-4 mr-2" />
-              Dinheiro
-            </TabsTrigger>
-            <TabsTrigger value="pix" className="data-[state=active]:bg-red-700/50">
-              <CreditCard className="h-4 w-4 mr-2" />
-              PIX
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="customer" className="text-white">
+              Cliente
+            </Label>
+            <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
+              <SelectTrigger className="bg-white/90 text-gray-900 mt-2">
+                <SelectValue placeholder="Selecione um cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                {customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    {customer.name} - {customer.cpf}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <TabsContent value="cash" className="space-y-4 mt-4">
-            <p className="text-white/80">Pagamento em dinheiro. O recibo será impresso após a confirmação.</p>
-          </TabsContent>
+          <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "pix" | "cash")}>
+            <TabsList className="grid w-full grid-cols-2 bg-red-900/20">
+              <TabsTrigger value="cash" className="data-[state=active]:bg-red-700/50">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Dinheiro
+              </TabsTrigger>
+              <TabsTrigger value="pix" className="data-[state=active]:bg-red-700/50">
+                <CreditCard className="h-4 w-4 mr-2" />
+                PIX
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="pix" className="space-y-4 mt-4">
-            <p className="text-white/80">O QR Code do PIX será gerado no recibo para pagamento.</p>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="cash" className="space-y-4 mt-4">
+              <p className="text-white/80">Pagamento em dinheiro. O recibo será impresso após a confirmação.</p>
+            </TabsContent>
+
+            <TabsContent value="pix" className="space-y-4 mt-4">
+              <p className="text-white/80">O QR Code do PIX será gerado no recibo para pagamento.</p>
+            </TabsContent>
+          </Tabs>
+        </div>
 
         <div className="mt-6 space-y-3">
           <Button
             onClick={handleCheckout}
-            disabled={cart.length === 0}
+            disabled={cart.length === 0 || !selectedCustomerId}
             className="w-full bg-red-700 hover:bg-red-800 text-white py-6 text-lg"
           >
             <Printer className="h-5 w-5 mr-2" />

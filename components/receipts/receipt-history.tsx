@@ -15,11 +15,14 @@ export function ReceiptHistory() {
 
   const fetchReceipts = async () => {
     try {
+      console.log("[v0] Fetching receipts from API")
       const response = await fetch("/api/receipts/list")
       const data = await response.json()
-      setReceipts(data || [])
+      console.log("[v0] Receipts response:", data)
+      setReceipts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("[v0] Error fetching receipts:", error)
+      setReceipts([])
     } finally {
       setLoading(false)
     }
