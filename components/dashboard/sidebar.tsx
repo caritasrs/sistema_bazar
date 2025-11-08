@@ -184,6 +184,17 @@ export function Sidebar({ user }: SidebarProps) {
             <span>Equipamentos</span>
           </Link>
         )}
+
+        {/* Configurações PIX */}
+        {(user?.role === "super_admin" || user?.role === "admin") && (
+          <Link
+            href="/dashboard/configuracoes"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-800/30 transition-all backdrop-blur-sm border border-transparent hover:border-red-300/20 hover:shadow-lg text-white"
+          >
+            <Settings className="h-5 w-5" />
+            <span>Configurações PIX</span>
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-red-300/20">

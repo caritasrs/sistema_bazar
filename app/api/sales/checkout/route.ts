@@ -1,5 +1,6 @@
 import { getAdminClient } from "@/lib/supabase-admin"
 import { NextResponse } from "next/server"
+import { generatePixPayload } from "@/lib/pix-generator"
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +32,48 @@ export async function POST(request: Request) {
     const receiptNumber = `RCP-${yy}${mm}${dd}${hh}${min}${ss}`
     console.log("[v0] Creating receipt:", receiptNumber)
 
+    let pixPayload = null
+    let receiptStatus = "paid" // Default for cash
+
+    if (payment_method === "pix") {
+      receiptStatus = "pending" // PIX starts as pending until confirmed
+
+      // Fetch PIX settings from database
+      const { data: settings } = await supabase
+        .from("settings")
+        .select("key, value")
+        .in("key", ["pix_key", "merchant_name", "merchant_city"])
+
+      const settingsObj =
+        settings?.reduce((acc: any, s: any) => {
+          acc[s.key] = s.value
+          return acc
+        }, {}) || {}
+
+      console.log("[v0] PIX settings loaded:", settingsObj)
+
+      if (!settingsObj.pix_key) {
+        console.error("[v0] PIX key not configured")
+        return NextResponse.json(
+          {
+            error: "Chave PIX não configurada. Configure em Configurações PIX.",
+          },
+          { status: 400 },
+        )
+      }
+
+      // Generate PIX payload using BR Code standard
+      pixPayload = generatePixPayload({
+        pixKey: settingsObj.pix_key,
+        merchantName: settingsObj.merchant_name || "Caritas RS",
+        merchantCity: settingsObj.merchant_city || "Porto Alegre",
+        amount: total_amount,
+        txid: receiptNumber,
+      })
+
+      console.log("[v0] PIX payload generated:", pixPayload.substring(0, 50) + "...")
+    }
+
     const { data: receipt, error: receiptError } = await supabase
       .from("receipts")
       .insert([
@@ -39,8 +82,9 @@ export async function POST(request: Request) {
           customer_id,
           payment_method,
           total_amount,
-          status: "paid",
+          status: receiptStatus,
           operator_name,
+          pix_url: pixPayload,
         },
       ])
       .select()
@@ -52,7 +96,7 @@ export async function POST(request: Request) {
     }
     console.log("[v0] Receipt created successfully:", receipt.id)
 
-    // Create receipt items and update item status
+    // Create receipt items (don't update item status yet if PIX pending)
     const receiptItems: any[] = []
     for (const item of items) {
       console.log("[v0] Processing item:", item.item_id)
@@ -77,18 +121,30 @@ export async function POST(request: Request) {
       }
       receiptItems.push(receiptItem)
 
-      // Update item status
-      const { error: updateError } = await supabase
-        .from("items")
-        .update({ status: "sold", sold_at: new Date().toISOString() })
-        .eq("id", item.item_id)
+      if (payment_method === "cash") {
+        const { error: updateError } = await supabase
+          .from("items")
+          .update({ status: "sold", sold_at: new Date().toISOString() })
+          .eq("id", item.item_id)
 
-      if (updateError) {
-        console.error("[v0] Item status update error:", updateError)
+        if (updateError) {
+          console.error("[v0] Item status update error:", updateError)
+        }
+      } else {
+        // Reserve items for PIX payment
+        const { error: reserveError } = await supabase
+          .from("items")
+          .update({ status: "reserved" })
+          .eq("id", item.item_id)
+
+        if (reserveError) {
+          console.error("[v0] Item reserve error:", reserveError)
+        }
       }
     }
 
     // Create transaction record
+    const transactionStatus = payment_method === "pix" ? "pending" : "completed"
     const { data: transaction, error: transError } = await supabase
       .from("transactions")
       .insert([
@@ -98,7 +154,7 @@ export async function POST(request: Request) {
           transaction_type: "purchase",
           amount: total_amount,
           payment_method,
-          status: "completed",
+          status: transactionStatus,
         },
       ])
       .select()
@@ -113,7 +169,7 @@ export async function POST(request: Request) {
     await supabase.from("audit_logs").insert([
       {
         user_id: customer_id,
-        action: "checkout_completed",
+        action: `checkout_${receiptStatus}`,
         table_name: "receipts",
         record_id: receipt.id,
       },

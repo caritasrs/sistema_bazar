@@ -16,8 +16,9 @@ export async function GET(request: Request) {
         *,
         customer:users(*),
         items:receipt_items(
-          *,
-          item:items(*)
+          description,
+          quantity,
+          unit_price
         )
       `)
 
@@ -30,12 +31,13 @@ export async function GET(request: Request) {
     const { data: receipt, error } = await query.single()
 
     if (error) {
+      console.error("[v0] Error fetching receipt:", error)
       return NextResponse.json({ error: "Receipt not found" }, { status: 404 })
     }
 
-    return NextResponse.json(receipt)
+    return NextResponse.json({ receipt })
   } catch (error) {
-    console.error("Error fetching receipt:", error)
+    console.error("[v0] Error fetching receipt:", error)
     return NextResponse.json({ error: "Failed to fetch receipt" }, { status: 500 })
   }
 }

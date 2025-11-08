@@ -138,10 +138,16 @@ export function SalesInterface() {
 
       const result = await response.json()
       console.log("[v0] Checkout successful:", result)
-      alert("Venda realizada com sucesso!")
+
+      if (paymentMethod === "pix") {
+        alert("Venda registrada! Aguardando pagamento PIX. Mostre o QR Code ao cliente.")
+      } else {
+        alert("Venda realizada com sucesso!")
+      }
+
       setCart([])
       setSelectedCustomerId("")
-      // Abrir impressão do recibo
+      // Abrir recibo em nova aba
       window.open(`/receipts/${result.receipt.id}`, "_blank")
     } catch (error) {
       console.error("[v0] Checkout exception:", error)
@@ -260,11 +266,23 @@ export function SalesInterface() {
             </TabsList>
 
             <TabsContent value="cash" className="space-y-4 mt-4">
-              <p className="text-white/80">Pagamento em dinheiro. O recibo será impresso após a confirmação.</p>
+              <p className="text-white/80">
+                Pagamento em dinheiro. A venda será finalizada imediatamente e o recibo será impresso.
+              </p>
             </TabsContent>
 
             <TabsContent value="pix" className="space-y-4 mt-4">
-              <p className="text-white/80">O QR Code do PIX será gerado no recibo para pagamento.</p>
+              <div className="bg-blue-500/20 border border-blue-300/30 rounded-lg p-4">
+                <p className="text-white/90 text-sm">
+                  <strong>Como funciona:</strong>
+                </p>
+                <ol className="text-white/80 text-sm mt-2 space-y-1 list-decimal list-inside">
+                  <li>Clique em "Finalizar Venda"</li>
+                  <li>O QR Code PIX será gerado</li>
+                  <li>Cliente escaneia e paga</li>
+                  <li>Confirme o pagamento recebido</li>
+                </ol>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
@@ -276,7 +294,7 @@ export function SalesInterface() {
             className="w-full bg-red-700 hover:bg-red-800 text-white py-6 text-lg"
           >
             <Printer className="h-5 w-5 mr-2" />
-            Finalizar Venda e Imprimir Recibo
+            {paymentMethod === "pix" ? "Gerar QR Code PIX" : "Finalizar Venda"}
           </Button>
 
           {cart.length > 0 && (
