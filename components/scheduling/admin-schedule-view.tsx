@@ -6,7 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Calendar, Clock, User, Phone, Mail, Edit, Trash2, AlertCircle, Info, Plus, Search } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  Mail,
+  Edit,
+  Trash2,
+  AlertCircle,
+  Info,
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Schedule {
@@ -211,7 +225,7 @@ export function AdminScheduleView() {
                     <strong>Não funcionamos:</strong> Sábados, domingos e feriados
                   </span>
                 </p>
-                <p className="text-sm">Capacidade: 2 clientes por horário</p>
+                <p className="text-sm">Capacidade: 1 cliente por horário</p>
               </div>
             </div>
           </div>
@@ -233,12 +247,13 @@ export function AdminScheduleView() {
                 newDate.setDate(newDate.getDate() - 1)
                 setSelectedDate(newDate)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
+              <ChevronLeft className="w-4 h-4" />
               Dia Anterior
             </Button>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-900">
+              <div className="text-2xl font-bold text-blue-900 capitalize">
                 {selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
               </div>
               {blocked && (
@@ -257,9 +272,21 @@ export function AdminScheduleView() {
                 newDate.setDate(newDate.getDate() + 1)
                 setSelectedDate(newDate)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               Próximo Dia
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="text-center mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedDate(new Date())}
+              className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 font-semibold"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Ir para Hoje
             </Button>
           </div>
         </CardContent>
@@ -277,7 +304,7 @@ export function AdminScheduleView() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {allTimeSlots.map((timeSlot) => {
             const schedulesInSlot = getSchedulesForSlot(timeSlot)
-            const capacity = 2
+            const capacity = 1
             const available = capacity - schedulesInSlot.length
             const timeDisplay = timeSlot.substring(0, 5)
 
@@ -285,11 +312,7 @@ export function AdminScheduleView() {
               <Card
                 key={timeSlot}
                 className={`border-2 transition-all ${
-                  available === 0
-                    ? "bg-red-50 border-red-300"
-                    : available === 1
-                      ? "bg-yellow-50 border-yellow-300"
-                      : "bg-green-50 border-green-300"
+                  available === 0 ? "bg-red-50 border-red-300" : "bg-green-50 border-green-300"
                 }`}
               >
                 <CardHeader className="pb-3">
@@ -300,14 +323,10 @@ export function AdminScheduleView() {
                     </div>
                     <span
                       className={`text-xs font-semibold px-2 py-1 rounded ${
-                        available === 0
-                          ? "bg-red-200 text-red-800"
-                          : available === 1
-                            ? "bg-yellow-200 text-yellow-800"
-                            : "bg-green-200 text-green-800"
+                        available === 0 ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"
                       }`}
                     >
-                      {available} {available === 1 ? "vaga" : "vagas"}
+                      {available === 0 ? "Ocupado" : "Disponível"}
                     </span>
                   </div>
                 </CardHeader>
@@ -374,20 +393,6 @@ export function AdminScheduleView() {
                           </div>
                         </div>
                       ))}
-                      {available > 0 && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full border-green-300 text-green-700 hover:bg-green-50 bg-transparent"
-                          onClick={() => {
-                            setSelectedTimeSlot(timeSlot)
-                            setShowAddModal(true)
-                          }}
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Adicionar Mais ({available} {available === 1 ? "vaga" : "vagas"})
-                        </Button>
-                      )}
                     </>
                   )}
                 </CardContent>

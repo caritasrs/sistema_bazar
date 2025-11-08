@@ -21,3 +21,5 @@ export function createClient() {
 export function getSupabaseClient() {
   return getAdminClient()
 }
+
+export const supabase = getAdminClient()

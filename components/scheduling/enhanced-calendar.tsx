@@ -31,24 +31,29 @@ export function EnhancedCalendar({ onDateSelect, selectedDate, showAvailabilityO
 
       const available = new Set<string>()
 
+      console.log(
+        "[v0] Fetching available dates for month:",
+        currentMonth.toLocaleString("pt-BR", { month: "long", year: "numeric" }),
+      )
+
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
         const dayDate = new Date(year, month, day)
 
-        // Skip past dates
         if (dayDate < new Date(new Date().setHours(0, 0, 0, 0))) {
           continue
         }
 
-        // Check if date has available slots
         const response = await fetch(`/api/scheduling/available-slots?date=${dateStr}`)
         const slots = await response.json()
 
         if (slots.length > 0) {
           available.add(dateStr)
+          console.log("[v0] Date with available slots:", dateStr, "- Total slots:", slots.length)
         }
       }
 
+      console.log("[v0] Total dates with availability:", available.size)
       setAvailableDates(available)
     } catch (error) {
       console.error("Error fetching available dates:", error)

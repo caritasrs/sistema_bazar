@@ -19,9 +19,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "CPF, email or ID required" }, { status: 400 })
     }
 
-    const { data: customer, error } = await query.single()
+    const { data: customer, error } = await query.maybeSingle()
 
-    if (error || !customer) {
+    if (error) {
+      console.error("[v0] Error fetching customer:", error)
+      return NextResponse.json({ error: "Database error" }, { status: 500 })
+    }
+
+    if (!customer) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 })
     }
 

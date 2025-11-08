@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       morningEnd: 12,
       afternoonStart: 13,
       afternoonEnd: 18,
-      maxCapacity: 2,
+      maxCapacity: 1, // Changed from 2 to 1 person per slot
     }
 
     const bookedTimes = schedules.map((s) => s.schedule_time)

@@ -6,33 +6,51 @@ export async function POST(request: Request) {
     const supabase = createClient()
     const body = await request.json()
 
-    console.log("[v0] Creating item:", body)
+    console.log("[v0] Creating item with data:", body)
+
+    if (!body.description) {
+      console.error("[v0] Missing required field: description")
+      return NextResponse.json({ error: "Descrição é obrigatória" }, { status: 400 })
+    }
+
+    if (!body.symbolic_value) {
+      console.error("[v0] Missing required field: symbolic_value")
+      return NextResponse.json({ error: "Valor simbólico é obrigatório" }, { status: 400 })
+    }
+
+    if (!body.condition) {
+      console.error("[v0] Missing required field: condition")
+      return NextResponse.json({ error: "Condição é obrigatória" }, { status: 400 })
+    }
 
     // Generate QR code if not provided
     const qrCode = body.qr_code || `QR${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-    const { data: item, error } = await supabase
-      .from("items")
-      .insert({
-        qr_code: qrCode,
-        batch_id: body.batch_id,
-        category_id: body.category_id,
-        description: body.description,
-        size: body.size,
-        condition: body.condition,
-        symbolic_value: body.symbolic_value,
-        origin: body.origin,
-        status: "available",
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error("[v0] Error creating item:", error)
-      throw error
+    const itemData: any = {
+      qr_code: qrCode,
+      description: body.description,
+      condition: body.condition,
+      symbolic_value: Number.parseFloat(body.symbolic_value),
+      status: "available",
     }
 
-    // Update batch total items
+    if (body.batch_id) itemData.batch_id = body.batch_id
+    if (body.category_id) itemData.category_id = body.category_id
+    if (body.donor_id) itemData.donor_id = body.donor_id
+    if (body.size) itemData.size = body.size
+    if (body.origin) itemData.origin = body.origin
+
+    console.log("[v0] Inserting item data:", itemData)
+
+    const { data: item, error } = await supabase.from("items").insert(itemData).select().single()
+
+    if (error) {
+      console.error("[v0] Database error creating item:", error)
+      return NextResponse.json({ error: `Erro ao criar item: ${error.message}` }, { status: 500 })
+    }
+
+    console.log("[v0] Item created successfully:", item)
+
     if (body.batch_id) {
       const { data: batch } = await supabase
         .from("donation_batches")
@@ -54,8 +72,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ item })
-  } catch (error) {
+  } catch (error: any) {
     console.error("[v0] Error in item creation:", error)
-    return NextResponse.json({ error: "Failed to create item" }, { status: 500 })
+    return NextResponse.json({ error: `Erro ao processar solicitação: ${error.message}` }, { status: 500 })
   }
 }
