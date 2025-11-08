@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { QrCode, Trash2, CreditCard, DollarSign, Printer } from "lucide-react"
+import { QrCode, Trash2, CreditCard, DollarSign, Printer, CheckCircle, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 interface CartItem {
   id: string
@@ -23,6 +24,15 @@ interface Customer {
   cpf: string
 }
 
+interface PendingPayment {
+  receiptId: string
+  receiptNumber: string
+  pixPayload: string
+  amount: number
+  merchantName: string
+  pixKey: string
+}
+
 export function SalesInterface() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [qrCode, setQrCode] = useState("")
@@ -31,6 +41,9 @@ export function SalesInterface() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("")
   const [operatorName, setOperatorName] = useState("")
+
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null)
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
 
   useEffect(() => {
     loadCustomers()
@@ -140,18 +153,66 @@ export function SalesInterface() {
       console.log("[v0] Checkout successful:", result)
 
       if (paymentMethod === "pix") {
-        alert("Venda registrada! Aguardando pagamento PIX. Mostre o QR Code ao cliente.")
+        // Fetch PIX settings for display
+        const settingsResponse = await fetch("/api/settings/get")
+        const settingsData = await settingsResponse.json()
+
+        setPendingPayment({
+          receiptId: result.receipt.id,
+          receiptNumber: result.receipt.receipt_number,
+          pixPayload: result.receipt.pix_url,
+          amount: result.receipt.total_amount,
+          merchantName: settingsData.settings.merchant_name || "Cáritas RS",
+          pixKey: settingsData.settings.pix_key || "",
+        })
       } else {
         alert("Venda realizada com sucesso!")
+        setCart([])
+        setSelectedCustomerId("")
+        window.open(`/receipts/${result.receipt.id}`, "_blank")
       }
-
-      setCart([])
-      setSelectedCustomerId("")
-      // Abrir recibo em nova aba
-      window.open(`/receipts/${result.receipt.id}`, "_blank")
     } catch (error) {
       console.error("[v0] Checkout exception:", error)
       alert("Erro ao processar venda")
+    }
+  }
+
+  const handleConfirmPixPayment = async () => {
+    if (!pendingPayment) return
+
+    setIsConfirmingPayment(true)
+    try {
+      const response = await fetch("/api/receipts/confirm-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receipt_id: pendingPayment.receiptId }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(errorData.error || "Erro ao confirmar pagamento")
+        return
+      }
+
+      alert("Pagamento confirmado! Venda finalizada com sucesso.")
+
+      // Clear cart and show receipt
+      setCart([])
+      setSelectedCustomerId("")
+      window.open(`/receipts/${pendingPayment.receiptId}`, "_blank")
+      setPendingPayment(null)
+    } catch (error) {
+      console.error("[v0] Error confirming payment:", error)
+      alert("Erro ao confirmar pagamento")
+    } finally {
+      setIsConfirmingPayment(false)
+    }
+  }
+
+  const handleCancelPixPayment = () => {
+    if (confirm("Deseja cancelar este pagamento PIX? Os itens voltarão ao estoque.")) {
+      setPendingPayment(null)
+      // Could call API to cancel the receipt and unreserve items
     }
   }
 
@@ -308,6 +369,79 @@ export function SalesInterface() {
           )}
         </div>
       </Card>
+
+      <Dialog open={!!pendingPayment} onOpenChange={(open) => !open && handleCancelPixPayment()}>
+        <DialogContent className="max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">Pagamento PIX Pendente</DialogTitle>
+            <DialogDescription className="text-gray-600">Aguardando confirmação de pagamento</DialogDescription>
+          </DialogHeader>
+
+          {pendingPayment && (
+            <div className="space-y-6">
+              {/* QR Code Display */}
+              <div className="flex flex-col items-center space-y-3 p-6 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700">Escaneie o QR Code para pagar:</p>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pendingPayment.pixPayload)}`}
+                    alt="QR Code PIX"
+                    className="w-64 h-64"
+                  />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-xs text-gray-500">Chave PIX: {pendingPayment.pixKey}</p>
+                  <p className="text-xs text-gray-500">{pendingPayment.merchantName}</p>
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-700">Recibo:</span>
+                  <span className="text-sm font-medium text-gray-900">{pendingPayment.receiptNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-700">Valor:</span>
+                  <span className="text-lg font-bold text-gray-900">R$ {pendingPayment.amount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm text-yellow-800 font-medium mb-2">Instruções:</p>
+                <ol className="text-xs text-yellow-700 space-y-1 list-decimal list-inside">
+                  <li>Cliente escaneia o QR Code com app do banco</li>
+                  <li>Cliente confirma o pagamento no app</li>
+                  <li>Verifique se o pagamento caiu na conta</li>
+                  <li>Clique em "Efetivar Venda" após confirmar o pagamento</li>
+                </ol>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button
+                  onClick={handleConfirmPixPayment}
+                  disabled={isConfirmingPayment}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg"
+                >
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  {isConfirmingPayment ? "Confirmando..." : "Efetivar Venda"}
+                </Button>
+
+                <Button
+                  onClick={handleCancelPixPayment}
+                  variant="outline"
+                  className="w-full border-red-300 text-red-700 hover:bg-red-50 bg-transparent"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar Pagamento
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
