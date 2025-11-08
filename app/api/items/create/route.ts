@@ -23,8 +23,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Condição é obrigatória" }, { status: 400 })
     }
 
-    // Generate QR code if not provided
-    const qrCode = body.qr_code || `QR${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const { data: uuidData } = await supabase.rpc("gen_random_uuid")
+    const qrCode = body.qr_code || crypto.randomUUID()
 
     const itemData: any = {
       qr_code: qrCode,
@@ -40,7 +40,8 @@ export async function POST(request: Request) {
     if (body.size) itemData.size = body.size
     if (body.origin) itemData.origin = body.origin
 
-    console.log("[v0] Inserting item data:", itemData)
+    console.log("[v0] Inserting item with UUID QR code:", qrCode)
+    console.log("[v0] Item data:", itemData)
 
     const { data: item, error } = await supabase.from("items").insert(itemData).select().single()
 
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Erro ao criar item: ${error.message}` }, { status: 500 })
     }
 
-    console.log("[v0] Item created successfully:", item)
+    console.log("[v0] Item created successfully with status:", item.status)
 
     if (body.batch_id) {
       const { data: batch } = await supabase

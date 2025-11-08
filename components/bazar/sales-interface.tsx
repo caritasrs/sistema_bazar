@@ -27,20 +27,27 @@ export function SalesInterface() {
 
     setIsScanning(true)
     try {
-      const response = await fetch(`/api/bazar/items/${qrCode}`)
+      const response = await fetch("/api/sales/scan-item", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qr_code: qrCode }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || "Item não encontrado ou já vendido")
+        return
+      }
+
       const item = await response.json()
 
-      if (item && item.status === "available") {
-        const existingItem = cart.find((i) => i.qr_code === qrCode)
-        if (existingItem) {
-          setCart(cart.map((i) => (i.qr_code === qrCode ? { ...i, quantity: i.quantity + 1 } : i)))
-        } else {
-          setCart([...cart, { ...item, quantity: 1 }])
-        }
-        setQrCode("")
+      const existingItem = cart.find((i) => i.qr_code === qrCode)
+      if (existingItem) {
+        setCart(cart.map((i) => (i.qr_code === qrCode ? { ...i, quantity: i.quantity + 1 } : i)))
       } else {
-        alert("Item não encontrado ou já vendido")
+        setCart([...cart, { ...item, quantity: 1 }])
       }
+      setQrCode("")
     } catch (error) {
       alert("Erro ao buscar item")
     } finally {

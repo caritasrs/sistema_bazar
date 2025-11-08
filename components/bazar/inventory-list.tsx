@@ -30,6 +30,7 @@ interface Item {
   category?: { id: string; name: string }
   batch?: { id: string; batch_code: string }
   donor?: { id: string; name: string }
+  qr_code?: string
 }
 
 interface Category {
@@ -200,6 +201,7 @@ export default function InventoryList() {
                     {item.size && <p className="text-sm text-red-100">Tamanho: {item.size}</p>}
                     {item.category && <p className="text-xs text-red-200">Categoria: {item.category.name}</p>}
                     {item.batch && <p className="text-xs text-red-200">Lote: {item.batch.batch_code}</p>}
+                    <p className="text-xs text-red-300 font-mono">QR: {item.qr_code || item.id}</p>
                   </div>
                   <div className="flex gap-2 mt-3 flex-wrap">
                     <Button
@@ -260,19 +262,20 @@ export default function InventoryList() {
                   </div>
                   <div className="border-4 border-gray-800 p-4 rounded-lg">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${viewingQRCode.id}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${viewingQRCode.qr_code || viewingQRCode.id}`}
                       alt="QR Code"
                       className="w-48 h-48"
                     />
                   </div>
-                  <p className="text-gray-500 text-xs font-mono">{viewingQRCode.id}</p>
+                  <p className="text-gray-500 text-xs font-mono">{viewingQRCode.qr_code || viewingQRCode.id}</p>
                 </div>
               </div>
 
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
-                    window.open(`/labels/${viewingQRCode.id}`, "_blank")
+                    const qrValue = viewingQRCode.qr_code || viewingQRCode.id
+                    window.open(`/labels/${qrValue}`, "_blank")
                   }}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 >
